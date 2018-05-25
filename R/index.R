@@ -246,3 +246,6 @@ deleteDocument <- function(projectID, documentPath, documentName, databaseID = "
   }
   return(Response)
 }
+
+
+
