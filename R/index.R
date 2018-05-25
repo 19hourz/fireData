@@ -218,4 +218,31 @@ createDocument <- function(projectID, documentPath, documentName = "none", datab
   return(Response)
 }
 
+#' @title The firestore deleteDocument function:
+#' @author Jiasheng Zhu
+#' @description The function allows to delete a document on firestore databases
+#' @param projectID The Firestore project ID {string}
+#' @param documentPath path for the document to be deleted {string}
+#' @param documentName name for the new document {string}
+#' @param databaseID The database under which document will be added {string}
+#' @param token The user access token that can be retrieved with the auth() function. Required when the database rules specify the need for user authentications. {string}
+#' @return returns empty when the operation is successful, otherwise a http response with error
+#' @export
+#' @examples
+#' \dontrun{
+#' response <- deleteDocument("gsoc2018-d05d8", documentPath = "this/trythis")
+#' }
+deleteDocument <- function(projectID, documentPath, documentName, databaseID = "(default)", token = "none") {
 
+  if(substring(documentPath, nchar(documentPath), nchar(documentPath)) != "/"){
+    documentPath <- paste0(documentPath, "/")
+  }
+  URL <- paste0(firestore_root, v1beta1_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath, documentName)
+  if (token == "none") {
+    Response <- httr::DELETE(url = URL)
+  } else {
+    token <- paste0(authPrefix, token)
+    Response <- httr::DELETE(url = URL, httr::add_headers(Authorization = token))
+  }
+  return(Response)
+}
