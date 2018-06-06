@@ -224,7 +224,7 @@ createDocument <- function(projectID, documentPath, documentName = "none", datab
 #' @param projectID The Firestore project ID {string}
 #' @param documentPath path for the document to be deleted {string}
 #' @param documentName name for the new document {string}
-#' @param databaseID The database under which document will be added {string}
+#' @param databaseID The database under which document will be deleted {string}
 #' @param token The user access token that can be retrieved with the auth() function. Required when the database rules specify the need for user authentications. {string}
 #' @return returns empty when the operation is successful, otherwise a http response with error
 #' @export
@@ -247,5 +247,58 @@ deleteDocument <- function(projectID, documentPath, documentName, databaseID = "
   return(Response)
 }
 
+# The following methods use documentPath as a substitution for documentpath and documentname
 
+#' @title The firestore get function:
+#' @author Jiasheng Zhu
+#' @description Get single document
+#' @param projectID The Firestore project ID {string}
+#' @param documentPath path for the document {string}
+#' @param databaseID The database under which this operation will be performed {string}
+#' @param token The user access token that can be retrieved with the auth() function. Required when the database rules specify the need for user authentications. {string}
+#' @return returns a http response with the document if successful
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+getDocument <- function(projectID, documentPath, databaseID = "(default)", token = "none") {
 
+  if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
+    documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
+  }
+  URL <- paste0(firestore_root, v1beta1_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath)
+  if (token == "none") {
+    Response <- httr::GET(url = URL)
+  } else {
+    token <- paste0(authPrefix, token)
+    Response <- httr::GET(url = URL, httr::add_headers(Authorization = token))
+  }
+  return(Response)
+}
+
+#' @title The firestore patch function:
+#' @author Jiasheng Zhu
+#' @description Patch single document
+#' @param projectID The Firestore project ID {string}
+#' @param document The document represented in the form firestore requires
+#' @param databaseID The database under which this operation will be performed {string}
+#' @param token The user access token that can be retrieved with the auth() function. Required when the database rules specify the need for user authentications. {string}
+#' @return returns a http response with the document if successful
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+patchDocument <- function(projectID, documentPath, document, databaseID = "(default)", token = "none") {
+
+  if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
+    documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
+  }
+  URL <- paste0(firestore_root, v1beta1_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath)
+  if (token == "none") {
+    Response <- httr::PATCH(url = URL, body = document)
+  } else {
+    token <- paste0(authPrefix, token)
+    Response <- httr::PATCH(url = URL, httr::add_headers(Authorization = token), body = document)
+  }
+  return(Response)
+}
