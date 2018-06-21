@@ -301,3 +301,83 @@ patchDocument <- function(projectID, documentPath, document, databaseID = "(defa
   }
   return(Response)
 }
+
+
+#' @title The firestore beginTransaction function
+#' @author Jiasheng Zhu
+#' @description Begin a transaction
+#' @param projectID The Firestore project ID {string}
+#' @param options options for the transactions {string}
+#' @param databaseID The database under which this operation will be performed {string}
+#' @param token The user access token that can be retrieved with the auth() function. Required when the database rules specify the need for user authentications. {string}
+#' @return http response with the transaction number
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+beginTransaction <- function(projectID, options, databaseID = "(default)", token = "none") {
+  if(substring(databaseID, nchar(databaseID), nchar(databaseID)) != "/"){
+    databaseID <- paste0(databaseID, "/")
+  }
+  URL <- paste0(firestore_root, v1beta1_prefix, projects, projectID, "/", databases, databaseID, "documents:rollback")
+  if (token == "none") {
+    Response <- httr::POST(url = URL, body = options)
+  } else {
+    token <- paste0(authPrefix, token)
+    Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = options)
+  }
+  return(Response)
+}
+
+#' @title The firestore commit function
+#' @author Jiasheng Zhu
+#' @description Commit a transaction
+#' @param projectID The Firestore project ID {string}
+#' @param options options for the commit, including write details and transaction number {string}
+#' @param databaseID The database under which this operation will be performed {string}
+#' @param token The user access token that can be retrieved with the auth() function. Required when the database rules specify the need for user authentications. {string}
+#' @return http response with the write results and commit time
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+commit <- function(projectID, options, databaseID = "(default)", token = "none") {
+  if(substring(databaseID, nchar(databaseID), nchar(databaseID)) != "/"){
+    databaseID <- paste0(databaseID, "/")
+  }
+  URL <- paste0(firestore_root, v1beta1_prefix, projects, projectID, "/", databases, databaseID, "documents:commit")
+  if (token == "none") {
+    Response <- httr::POST(url = URL, body = options)
+  } else {
+    token <- paste0(authPrefix, token)
+    Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = options)
+  }
+  return(Response)
+}
+
+#' @title The firestore rollback function
+#' @author Jiasheng Zhu
+#' @description Rollback a transaction
+#' @param projectID The Firestore project ID {string}
+#' @param transaction The transaction to be rolled-back {string}
+#' @param databaseID The database under which this operation will be performed {string}
+#' @param token The user access token that can be retrieved with the auth() function. Required when the database rules specify the need for user authentications. {string}
+#' @return empty http response if successful
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+rollback <- function(projectID, transaction, databaseID = "(default)", token = "none") {
+  if(substring(databaseID, nchar(databaseID), nchar(databaseID)) != "/"){
+    databaseID <- paste0(databaseID, "/")
+  }
+  URL <- paste0(firestore_root, v1beta1_prefix, projects, projectID, "/", databases, databaseID, "documents:rollback")
+  request_body <- paste0('{"transaction": "', transaction, '"}')
+  if (token == "none") {
+    Response <- httr::POST(url = URL)
+  } else {
+    token <- paste0(authPrefix, token)
+    Response <- httr::POST(url = URL, httr::add_headers(Authorization = token))
+  }
+  return(Response)
+}
