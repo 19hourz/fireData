@@ -383,9 +383,14 @@ rollback <- function(projectID, transaction, databaseID = "(default)", token = "
 }
 
 toJSON <- function(data) {
-  if(is.data.frame(data)){
-
-  } else {
-    stop("Given data is not type of data frame")
+  data_str = jsonlite::toJSON(data)
+  json_str = paste0(
+    '
+  "fields": {
+    "hcjson": {
+      "stringValue": \'', data_str, '\'
+    }
   }
+  ')
+  return(json_str)
 }
