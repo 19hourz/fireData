@@ -381,3 +381,11 @@ rollback <- function(projectID, transaction, databaseID = "(default)", token = "
   }
   return(Response)
 }
+
+toJSON <- function(data) {
+  if(is.data.frame(data)){
+
+  } else {
+    stop("Given data is not type of data frame")
+  }
+}
