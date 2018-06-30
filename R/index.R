@@ -400,3 +400,21 @@ generateField <- function(data, max_digits = NA, auto_unbox = TRUE) {
   json_str = paste0('"fields": {"hcjson": {"stringValue": \'', data_str, '\'}}')
   return(json_str)
 }
+
+#' @title Generate Firestore document
+#' @author Jiasheng Zhu
+#' @description Convert data frame to a Firestore document
+#' @param data The data frame to be converted {data.frame}
+#' @param max_digits The maximum digits to keep in the convertion, default is NA, (all)
+#' @param auto_unbox automatically \code{\link{unbox}} all atomic vectors of length 1. It is usually safer to avoid this and instead use the \code{\link{unbox}} function to unbox individual elements.
+#'   An exception is that objects of class \code{AsIs} (i.e. wrapped in \code{I()}) are not automatically unboxed. This is a way to mark single values as length-1 arrays.
+#' @return converted json string
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+generateDocument <- function(data, max_digits = NA, auto_unbox = TRUE) {
+  field <- generateField(data, max_digits, auto_unbox)
+  document = paste0('{', field, ',}')
+  return(document)
+}
