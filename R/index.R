@@ -195,7 +195,7 @@ path_check <- function(path){
 #' @param projectID The Firestore project ID {string}
 #' @param documentPath path for the new document {string}
 #' @param documentName name for the new document {string}
-#' @param document the document to be created {string}
+#' @param document the document to be created
 #' @param databaseID The database under which document will be added {string}
 #' @param token The user access token that can be retrieved with the auth() function. Required when the database rules specify the need for user authentications. {string}
 #' @return returns a http response
@@ -203,7 +203,12 @@ path_check <- function(path){
 #' @examples
 #' \dontrun{
 #' }
-createDocument <- function(projectID, documentPath, document = "", documentName = "none", databaseID = "(default)", token = "none") {
+createDocument <- function(projectID, documentPath, document, documentName = "none", databaseID = "(default)", token = "none") {
+  if(is.data.frame(document)){
+    document <- generateDocument(document)
+  } else if(!is.character(document)){
+    stop("Only supports data frame or string as document types")
+  }
   if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
     documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
   }
@@ -245,22 +250,19 @@ deleteDocument <- function(projectID, documentPath, databaseID = "(default)", to
   return(Response)
 }
 
-# The following methods use documentPath as a substitution for documentpath and documentname
-
 #' @title The firestore get function
 #' @author Jiasheng Zhu
 #' @description Get single document
 #' @param projectID The Firestore project ID {string}
-#' @param documentPath path for the document {string}
+#' @param documentPath path for the document to be deleted {string}
 #' @param databaseID The database under which this operation will be performed {string}
 #' @param token The user access token that can be retrieved with the auth() function. Required when the database rules specify the need for user authentications. {string}
-#' @return returns a http response with the document if successful
+#' @return returns the data frame if successful, else return the full http response
 #' @export
 #' @examples
 #' \dontrun{
 #' }
 getDocument <- function(projectID, documentPath, databaseID = "(default)", token = "none") {
-
   if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
     documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
   }
@@ -271,9 +273,19 @@ getDocument <- function(projectID, documentPath, databaseID = "(default)", token
     token <- paste0(authPrefix, token)
     Response <- httr::GET(url = URL, httr::add_headers(Authorization = token))
   }
-  return(Response)
+  parsed_response <- httr::content(Response, "parsed")
+  if(!is.null(parsed_response$error)){
+    warning("There is something wrong with the request, returning the full response")
+    return(Response)
+  } else if (!is.null(parsed_response$fields$hcjson$stringValue)) {
+    json_result = parsed_response$fields$hcjson$stringValue
+    data = jsonlite::fromJSON(json_result)
+    return(data)
+  } else {
+    warning("The requested document is not in the required format, returning the full response")
+    return(Response)
+  }
 }
-
 #' @title The firestore patch function
 #' @author Jiasheng Zhu
 #' @description Patch single document
