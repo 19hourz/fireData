@@ -189,6 +189,15 @@ path_check <- function(path){
   return(path)
 }
 
+## Below are implementation for Cloud Firestore
+
+firestore_root <- "https://firestore.googleapis.com/"
+version_prefix <- "v1beta1/"
+projects <- "projects/"
+databases <- "databases/"
+documents <- "documents/"
+authPrefix <- "Bearer "
+
 #' @title The firestore createDocument function
 #' @author Jiasheng Zhu
 #' @description The function allows to create new document on firestore databases
@@ -213,9 +222,9 @@ createDocument <- function(projectID, documentPath, document, documentName = "no
     documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
   }
   if (documentName == "none") {
-    URL <- paste0(firestore_root, v1beta1_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath)
+    URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath)
   } else {
-    URL <- paste0(firestore_root, v1beta1_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath, "?documentId=", documentName)
+    URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath, "?documentId=", documentName)
   }
   if (token == "none") {
     Response <- httr::POST(url = URL, body = document)
@@ -240,7 +249,7 @@ createDocument <- function(projectID, documentPath, document, documentName = "no
 #' response <- deleteDocument("gsoc2018-d05d8", documentPath = "this/trythis")
 #' }
 deleteDocument <- function(projectID, documentPath, databaseID = "(default)", token = "none") {
-  URL <- paste0(firestore_root, v1beta1_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath)
+  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath)
   if (token == "none") {
     Response <- httr::DELETE(url = URL)
   } else {
@@ -266,7 +275,7 @@ getDocument <- function(projectID, documentPath, databaseID = "(default)", token
   if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
     documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
   }
-  URL <- paste0(firestore_root, v1beta1_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath)
+  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath)
   if (token == "none") {
     Response <- httr::GET(url = URL)
   } else {
@@ -286,11 +295,12 @@ getDocument <- function(projectID, documentPath, databaseID = "(default)", token
     return(Response)
   }
 }
+
 #' @title The firestore patch function
 #' @author Jiasheng Zhu
 #' @description Patch single document
 #' @param projectID The Firestore project ID {string}
-#' @param documentPath path for the document {string}
+#' @param documentPath path for the document to be deleted {string}
 #' @param document The document represented in the form firestore requires
 #' @param databaseID The database under which this operation will be performed {string}
 #' @param token The user access token that can be retrieved with the auth() function. Required when the database rules specify the need for user authentications. {string}
@@ -300,11 +310,15 @@ getDocument <- function(projectID, documentPath, databaseID = "(default)", token
 #' \dontrun{
 #' }
 patchDocument <- function(projectID, documentPath, document, databaseID = "(default)", token = "none") {
-
+  if(is.data.frame(document)){
+    document <- generateDocument(document, name = paste0(projects, projectID, "/", databaseID, "/", documents, documentPath))
+  } else if(!is.character(document)){
+    stop("Only supports data frame or string as document types")
+  }
   if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
     documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
   }
-  URL <- paste0(firestore_root, v1beta1_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath)
+  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath)
   if (token == "none") {
     Response <- httr::PATCH(url = URL, body = document)
   } else {
@@ -331,7 +345,7 @@ beginTransaction <- function(projectID, options, databaseID = "(default)", token
   if(substring(databaseID, nchar(databaseID), nchar(databaseID)) != "/"){
     databaseID <- paste0(databaseID, "/")
   }
-  URL <- paste0(firestore_root, v1beta1_prefix, projects, projectID, "/", databases, databaseID, "documents:rollback")
+  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "documents:rollback")
   if (token == "none") {
     Response <- httr::POST(url = URL, body = options)
   } else {
@@ -357,7 +371,7 @@ commit <- function(projectID, options, databaseID = "(default)", token = "none")
   if(substring(databaseID, nchar(databaseID), nchar(databaseID)) != "/"){
     databaseID <- paste0(databaseID, "/")
   }
-  URL <- paste0(firestore_root, v1beta1_prefix, projects, projectID, "/", databases, databaseID, "documents:commit")
+  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "documents:commit")
   if (token == "none") {
     Response <- httr::POST(url = URL, body = options)
   } else {
@@ -383,7 +397,7 @@ rollback <- function(projectID, transaction, databaseID = "(default)", token = "
   if(substring(databaseID, nchar(databaseID), nchar(databaseID)) != "/"){
     databaseID <- paste0(databaseID, "/")
   }
-  URL <- paste0(firestore_root, v1beta1_prefix, projects, projectID, "/", databases, databaseID, "documents:rollback")
+  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "documents:rollback")
   request_body <- paste0('{"transaction": "', transaction, '"}')
   if (token == "none") {
     Response <- httr::POST(url = URL)
@@ -420,13 +434,18 @@ generateField <- function(data, max_digits = NA, auto_unbox = TRUE) {
 #' @param max_digits The maximum digits to keep in the convertion, default is NA, (all)
 #' @param auto_unbox automatically \code{\link{unbox}} all atomic vectors of length 1. It is usually safer to avoid this and instead use the \code{\link{unbox}} function to unbox individual elements.
 #'   An exception is that objects of class \code{AsIs} (i.e. wrapped in \code{I()}) are not automatically unboxed. This is a way to mark single values as length-1 arrays.
+#' @param name an optional name field can be added to the document
 #' @return converted json string
 #' @export
 #' @examples
 #' \dontrun{
 #' }
-generateDocument <- function(data, max_digits = NA, auto_unbox = TRUE) {
+generateDocument <- function(data, max_digits = NA, auto_unbox = TRUE, name = "none") {
   field <- generateField(data, max_digits, auto_unbox)
-  document = paste0('{', field, ',}')
+  if(name == "none") {
+    document = paste0('{', field, ',}')
+  } else {
+    document = paste0('{"name": "',name,'",', field, ',}')
+  }
   return(document)
 }
