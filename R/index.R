@@ -282,18 +282,7 @@ getDocument <- function(projectID, documentPath, databaseID = "(default)", token
     token <- paste0(authPrefix, token)
     Response <- httr::GET(url = URL, httr::add_headers(Authorization = token))
   }
-  parsed_response <- httr::content(Response, "parsed")
-  if(!is.null(parsed_response$error)){
-    warning("There is something wrong with the request, returning the full response")
-    return(Response)
-  } else if (!is.null(parsed_response$fields$hcjson$stringValue)) {
-    json_result = parsed_response$fields$hcjson$stringValue
-    data = jsonlite::fromJSON(json_result)
-    return(data)
-  } else {
-    warning("The requested document is not in the required format, returning the full response")
-    return(Response)
-  }
+  return(fromResponse(Response))
 }
 
 #' @title The firestore patch function
