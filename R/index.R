@@ -421,11 +421,18 @@ rollback <- function(projectID, transaction, databaseID = "(default)", token = "
 #' \dontrun{
 #' }
 generateField <- function(data, max_digits = NA, auto_unbox = TRUE) {
-  data_str = jsonlite::toJSON(data, digits = max_digits, auto_unbox = auto_unbox)
-  # form a document with single field
-  json_str = paste0('"fields": {"hcjson": {"stringValue": \'', data_str, '\'}}')
+  if(!is.data.frame(data)){
+    stop("Only supports data frame type")
+  }
+  json_str = '"fields": {'
+  for(col in names(data)){
+    col_str = jsonlite::toJSON(data[col], digits = max_digits, auto_unbox = auto_unbox)
+    json_str = paste0(json_str, '"', col, '": {"stringValue": \'', col_str, '\'},')
+  }
+  json_str = paste0(json_str, "}")
   return(json_str)
 }
+
 
 #' @title Generate Firestore document
 #' @author Jiasheng Zhu
@@ -443,9 +450,37 @@ generateField <- function(data, max_digits = NA, auto_unbox = TRUE) {
 generateDocument <- function(data, max_digits = NA, auto_unbox = TRUE, name = "none") {
   field <- generateField(data, max_digits, auto_unbox)
   if(name == "none") {
-    document = paste0('{', field, ',}')
+    document = paste0('{', field, '}')
   } else {
-    document = paste0('{"name": "',name,'",', field, ',}')
+    document = paste0('{"name": "',name,'",', field, '}')
   }
   return(document)
+}
+
+#' @title Generate data frame from firestore document
+#' @author Jiasheng Zhu
+#' @description Convert http response that contains a firestore document to a data frame
+#' @param data The data frame to be converted {data.frame}
+#' @return converted data frame
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+fromResponse <- function(response){
+  parsed_response <- httr::content(response, "parsed")
+  if(is.null(parsed_response$fields)){
+    stop("Invalid response: could not find fields")
+    return(response)
+  } else {
+    df <- data.frame()
+    for(i in names(parsed_response$fields)){
+      col <- jsonlite::fromJSON(parsed_response$fields[[i]]$stringValue)
+      if(ncol(df) == 0){
+        df = col
+      } else{
+        df = cbind(df, col)
+      }
+    }
+  }
+  return(df)
 }
