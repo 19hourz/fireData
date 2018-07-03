@@ -473,3 +473,53 @@ fromResponse <- function(response){
   }
   return(df)
 }
+
+
+encode <- function(value){
+  if(is.vector(value) && length(value) > 1){
+    str <- ''
+    for(element in value){
+      str <- paste0(str, encode(element), ",")
+    }
+    return(paste0('{ "arrayValue": { "values" : [', str, '] } }'))
+  }
+
+  if(is.null(value))
+    return(paste0('{ "nullValue": "', value, '" }'))
+
+  if(is.logical(value))
+    return(paste0('{ "booleanValue": "', value, '" }'))
+
+  if(is.integer(value))
+    return(paste0('{ "integerValue": "', value, '" }'))
+
+  if(is.double(value))
+    return(paste0('{ "doubleValue": "', value, '" }'))
+
+  #TODO check this type's correctness
+  if(is.numeric.Date(value))
+    return(paste0('{ "timestampValue": "', value, '" }'))
+
+  if(is.character(value))
+    return(paste0('{ "stringValue": "', value, '" }'))
+
+  #TODO Binary (byte) type is not included
+
+  # NOTE: We avoid doing an isinstance() check for a Document
+  #       here to avoid import cycles.
+  #TODO reference type
+  #TODO geo point type
+
+  if(is.list(value)){
+    str <- ''
+    for(name in names(value)){
+      str <- paste0(str,'"', name, '" : ', encode(value[[name]]), ', ')
+    }
+    return(paste0('{', str, '}'))
+    #return(paste0('{ "mapValue": { "fields" : ', str, ' } }'))
+  }
+
+  #TODO dict
+
+  stop('Cannot convert to a Firestore Value', value, 'Invalid type', typeof(value))
+}
