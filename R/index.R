@@ -523,3 +523,40 @@ encode <- function(value){
 
   stop('Cannot convert to a Firestore Value', value, 'Invalid type', typeof(value))
 }
+
+recursive_decode <- function(fields){
+  for(name in names(fields)){
+    if(!length(names(fields)) == 1) stop("A key is mapped to more than one value")
+    if(names(fields) == "mapValue"){
+      result <- list()
+      for (col in names(fields$mapValue$fields)) {
+        result[[col]] <- recursive_decode(fields$mapValue$fields[[col]])
+      }
+      return(data.frame(result))
+    } else if(names(fields) == "arrayValue"){
+      vector_length = length(fields$arrayValue$values)
+      result <- vector(length = vector_length)
+      for (i in 1:vector_length) {
+        result[i] <- recursive_decode(fields$arrayValue$values[i][[1]])
+      }
+      return(result)
+    } else if(names(fields) == "doubleValue"){
+      return(fields$doubleValue)
+    } #TODO other types
+    else {
+      stop('Cannot convert to a Firestore Value ', fields, 'Invalid type', names(fields))
+    }
+  }
+}
+
+decode <- function(response){
+  parsed_response <- httr::content(response, "parsed")
+  if(is.null(parsed_response$fields)){
+    stop("Invalid response: could not find fields")
+    return(response)
+  } else {
+    # TODO first level parsing unresolved
+    result <- recursive_decode(parsed_response$fields[["df"]])
+  }
+  return(result)
+}
