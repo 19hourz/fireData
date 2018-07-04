@@ -397,32 +397,6 @@ rollback <- function(projectID, transaction, databaseID = "(default)", token = "
   return(Response)
 }
 
-#' @title Generate Firestore document field
-#' @author Jiasheng Zhu
-#' @description Convert data frame to a Firestore document with single field
-#' @param data The data frame to be converted {data.frame}
-#' @param max_digits The maximum digits to keep in the convertion, default is NA, (all)
-#' @param auto_unbox automatically \code{\link{unbox}} all atomic vectors of length 1. It is usually safer to avoid this and instead use the \code{\link{unbox}} function to unbox individual elements.
-#'   An exception is that objects of class \code{AsIs} (i.e. wrapped in \code{I()}) are not automatically unboxed. This is a way to mark single values as length-1 arrays.
-#' @return converted json string
-#' @export
-#' @examples
-#' \dontrun{
-#' }
-generateField <- function(data, max_digits = NA, auto_unbox = TRUE) {
-  if(!is.data.frame(data)){
-    stop("Only supports data frame type")
-  }
-  json_str = '"fields": {'
-  for(col in names(data)){
-    col_str = jsonlite::toJSON(data[col], digits = max_digits, auto_unbox = auto_unbox)
-    json_str = paste0(json_str, '"', col, '": {"stringValue": \'', col_str, '\'},')
-  }
-  json_str = paste0(json_str, "}")
-  return(json_str)
-}
-
-
 #' @title Generate Firestore document
 #' @author Jiasheng Zhu
 #' @description Convert data frame to a Firestore document
@@ -437,41 +411,13 @@ generateField <- function(data, max_digits = NA, auto_unbox = TRUE) {
 #' \dontrun{
 #' }
 generateDocument <- function(data, max_digits = NA, auto_unbox = TRUE, name = "none") {
-  field <- generateField(data, max_digits, auto_unbox)
+  field <- encode(data)
   if(name == "none") {
-    document = paste0('{', field, '}')
+    document = paste0('{"fields":', field, '}')
   } else {
-    document = paste0('{"name": "',name,'",', field, '}')
+    document = paste0('{"name": "',name,'","fields":', field, '}')
   }
   return(document)
-}
-
-#' @title Generate data frame from firestore document
-#' @author Jiasheng Zhu
-#' @description Convert http response that contains a firestore document to a data frame
-#' @param data The data frame to be converted {data.frame}
-#' @return converted data frame
-#' @export
-#' @examples
-#' \dontrun{
-#' }
-fromResponse <- function(response){
-  parsed_response <- httr::content(response, "parsed")
-  if(is.null(parsed_response$fields)){
-    stop("Invalid response: could not find fields")
-    return(response)
-  } else {
-    df <- data.frame()
-    for(i in names(parsed_response$fields)){
-      col <- jsonlite::fromJSON(parsed_response$fields[[i]]$stringValue)
-      if(ncol(df) == 0){
-        df = col
-      } else{
-        df = cbind(df, col)
-      }
-    }
-  }
-  return(df)
 }
 
 #' @title Decode a Firestore document to R variable recursively
@@ -553,4 +499,62 @@ decode <- function(response){
     result <- recursive_decode(parsed_response$fields[["df"]])
   }
   return(result)
+}
+
+#' @title Encode a R variable to Firestore document
+#' @author Jiasheng Zhu
+#' @description Convert any R variable to string which conforms to Firestore document format
+#' @param value The data frame to be converted
+#' @return string representing Firestore document
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+encode <- function(value){
+  if(is.vector(value) && length(value) > 1){
+    str <- ''
+    for(element in value){
+      str <- paste0(str, encode(element), ",")
+    }
+    return(paste0('{ "arrayValue": { "values" : [', str, '] } }'))
+  }
+
+  if(is.null(value))
+    return(paste0('{ "nullValue": "', value, '" }'))
+
+  if(is.logical(value))
+    return(paste0('{ "booleanValue": "', value, '" }'))
+
+  if(is.integer(value))
+    return(paste0('{ "integerValue": "', value, '" }'))
+
+  if(is.double(value))
+    return(paste0('{ "doubleValue": "', value, '" }'))
+
+  #TODO check this type's correctness
+  if(is.numeric.Date(value))
+    return(paste0('{ "timestampValue": "', value, '" }'))
+
+  if(is.character(value))
+    return(paste0('{ "stringValue": "', value, '" }'))
+
+  #TODO Binary (byte) type is not included
+
+  # NOTE: We avoid doing an isinstance() check for a Document
+  #       here to avoid import cycles.
+  #TODO reference type
+  #TODO geo point type
+
+  if(is.list(value)){
+    str <- ''
+    for(name in names(value)){
+      str <- paste0(str,'"', name, '" : ', encode(value[[name]]), ', ')
+    }
+    #return(paste0('{', str, '}'))
+    return(paste0('{"df":{"mapValue":{"fields" : {', str, '}}}}'))
+  }
+
+  #TODO dict
+
+  stop('Cannot convert to a Firestore Value', value, 'Invalid type', typeof(value))
 }
