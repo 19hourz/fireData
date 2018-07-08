@@ -266,12 +266,13 @@ deleteDocument <- function(projectID, documentPath, databaseID = "(default)", to
 #' @param documentPath path for the document to be deleted {string}
 #' @param databaseID The database under which this operation will be performed {string}
 #' @param token The user access token that can be retrieved with the auth() function. Required when the database rules specify the need for user authentications. {string}
+#' @param decode Whether to decode the result to R variblaes
 #' @return returns the data frame if successful, else return the full http response
 #' @export
 #' @examples
 #' \dontrun{
 #' }
-getDocument <- function(projectID, documentPath, databaseID = "(default)", token = "none") {
+getDocument <- function(projectID, documentPath, databaseID = "(default)", token = "none", decode = TRUE) {
   if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
     documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
   }
@@ -282,7 +283,11 @@ getDocument <- function(projectID, documentPath, databaseID = "(default)", token
     token <- paste0(authPrefix, token)
     Response <- httr::GET(url = URL, httr::add_headers(Authorization = token))
   }
-  return(decode(Response))
+  if(parse){
+    return(decode(Response))
+  } else {
+    return(Response)
+  }
 }
 
 #' @title The firestore patch function
@@ -419,6 +424,7 @@ generateDocument <- function(data, max_digits = NA, auto_unbox = TRUE, name = "n
   }
   return(document)
 }
+
 #' @title Encode a R variable to Firestore document
 #' @author Jiasheng Zhu
 #' @description Convert any R variable to string which conforms to Firestore document format
