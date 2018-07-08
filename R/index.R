@@ -419,6 +419,163 @@ generateDocument <- function(data, max_digits = NA, auto_unbox = TRUE, name = "n
   }
   return(document)
 }
+#' @title Encode a R variable to Firestore document
+#' @author Jiasheng Zhu
+#' @description Convert any R variable to string which conforms to Firestore document format
+#' @param value The data frame to be converted
+#' @return string representing Firestore document
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+encode <- function(value){
+  #vector
+  if(is.vector(value) && length(value) > 1){
+    str <- ''
+    for(element in value){
+      str <- paste0(str, recursive_encode(element), ",")
+    }
+    return(paste0('{"fireData" : { "arrayValue": { "values" : [', str, ']}}}'))
+  }
+
+  #array and matrix
+  if(is.array(value)){
+    data_str <- recursive_encode(as.vector(value))
+    dim_str <- recursive_encode(dim(value))
+    return(paste0('{"array" : { "mapValue": { "fields" : { "data" : ', data_str, ',
+                  "dim"  : ', dim_str, '}}}}'))
+    }
+
+  #data.frame
+  if(is.data.frame(value)){
+    str <- ''
+    for(name in names(value)){
+      str <- paste0(str,'"', name, '" : ', recursive_encode(value[[name]]), ', ')
+    }
+    return(paste0('{"data.frame":{"mapValue":{"fields" : {', str, '}}}}'))
+  }
+
+  #list
+  if(is.list(value)){
+    str <- ''
+    for(name in names(value)){
+      str <- paste0(str,'"', name, '" : ', recursive_encode(value[[name]]), ', ')
+    }
+    return(paste0('{"list":{"mapValue":{"fields" : {', str, '}}}}'))
+  }
+
+  if(is.null(value))
+    return(paste0('{"fireData" : { "nullValue": "', value, '" }}'))
+
+  if(is.logical(value))
+    return(paste0('{"fireData" : { "booleanValue": "', value, '" }}'))
+
+  if(is.integer(value))
+    return(paste0('{"fireData" : { "integerValue": "', value, '" }}'))
+
+  if(is.double(value))
+    return(paste0('{"fireData" : { "doubleValue": "', value, '" }}'))
+
+  #TODO check this type's correctness
+  if(is.numeric.Date(value))
+    return(paste0('{"fireData" : { "timestampValue": "', value, '" }}'))
+
+  if(is.character(value))
+    return(paste0('{"fireData" : { "stringValue": "', value, '" }}'))
+
+  #TODO Binary (byte) type is not included
+
+  # NOTE: We avoid doing an isinstance() check for a Document
+  #       here to avoid import cycles.
+  #TODO reference type
+  #TODO geo point type
+
+  stop('Cannot convert to a Firestore Value', value, 'Invalid type', typeof(value))
+  }
+
+#' @title Encode a R variable to Firestore document recursively
+#' @author Jiasheng Zhu
+#' @description Convert any R variable to string which conforms to Firestore document format recursively
+#' @param value The data frame to be converted
+#' @return string representing Firestore document
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+recursive_encode <- function(value){
+  if(is.vector(value) && length(value) > 1){
+    str <- ''
+    for(element in value){
+      str <- paste0(str, recursive_encode(element), ",")
+    }
+    return(paste0('{ "arrayValue": { "values" : [', str, '] } }'))
+  }
+
+  if(is.list(value)){
+    str <- ''
+    for(name in names(value)){
+      str <- paste0(str,'"', name, '" : ', recursive_encode(value[[name]]), ', ')
+    }
+    return(paste0('{"mapValue":{"fields" : {', str, '}}}'))
+  }
+
+  if(is.null(value))
+    return(paste0('{ "nullValue": "', value, '" }'))
+
+  if(is.logical(value))
+    return(paste0('{ "booleanValue": "', value, '" }'))
+
+  if(is.integer(value))
+    return(paste0('{ "integerValue": "', value, '" }'))
+
+  if(is.double(value))
+    return(paste0('{ "doubleValue": "', value, '" }'))
+
+  #TODO check this type's correctness
+  if(is.numeric.Date(value))
+    return(paste0('{ "timestampValue": "', value, '" }'))
+
+  if(is.character(value))
+    return(paste0('{ "stringValue": "', value, '" }'))
+
+  #TODO Binary (byte) type is not included
+
+  # NOTE: We avoid doing an isinstance() check for a Document
+  #       here to avoid import cycles.
+  #TODO reference type
+  #TODO geo point type
+
+  stop('Cannot convert to a Firestore Value', value, 'Invalid type', typeof(value))
+}
+
+#' @title Decode a Firestore document to R variable
+#' @author Jiasheng Zhu
+#' @description Convert string which conforms to Firestore document format to R variable
+#' @param response HTTP response including a Firestore document
+#' @return R variable
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+decode <- function(response){
+  parsed_response <- httr::content(response, "parsed")
+  if(is.null(parsed_response$fields)){
+    stop("Invalid response: could not find fields")
+    return(response)
+  } else {
+    if(names(parsed_response$fields) == "array"){
+      data <- recursive_decode(parsed_response$fields[["array"]]$mapValue$fields$data)
+      dim <- recursive_decode(parsed_response$fields[["array"]]$mapValue$fields$dim)
+      result <- array(data, dim)
+    } else if(names(parsed_response$fields) != "fireData"){
+      result <- recursive_decode(parsed_response$fields[[names(parsed_response$fields)]])
+      result <- do.call(names(parsed_response$fields), result)
+    } else {
+      result <- recursive_decode(parsed_response$fields[["fireData"]])
+    }
+  }
+  return(result)
+}
 
 #' @title Decode a Firestore document to R variable recursively
 #' @author Jiasheng Zhu
@@ -437,7 +594,7 @@ recursive_decode <- function(fields){
       for (col in names(fields$mapValue$fields)) {
         result[[col]] <- recursive_decode(fields$mapValue$fields[[col]])
       }
-      return(data.frame(result))
+      return(result)
     }
 
     else if(names(fields) == "arrayValue"){
@@ -478,83 +635,4 @@ recursive_decode <- function(fields){
       stop('Cannot convert to a Firestore Value ', fields, 'Invalid type', names(fields))
     }
   }
-}
-
-#' @title Decode a Firestore document to R variable
-#' @author Jiasheng Zhu
-#' @description Convert string which conforms to Firestore document format to R variable
-#' @param response HTTP response including a Firestore document
-#' @return R variable
-#' @export
-#' @examples
-#' \dontrun{
-#' }
-decode <- function(response){
-  parsed_response <- httr::content(response, "parsed")
-  if(is.null(parsed_response$fields)){
-    stop("Invalid response: could not find fields")
-    return(response)
-  } else {
-    # TODO first level parsing unresolved, only supports df now
-    result <- recursive_decode(parsed_response$fields[["df"]])
-  }
-  return(result)
-}
-
-#' @title Encode a R variable to Firestore document
-#' @author Jiasheng Zhu
-#' @description Convert any R variable to string which conforms to Firestore document format
-#' @param value The data frame to be converted
-#' @return string representing Firestore document
-#' @export
-#' @examples
-#' \dontrun{
-#' }
-encode <- function(value){
-  if(is.vector(value) && length(value) > 1){
-    str <- ''
-    for(element in value){
-      str <- paste0(str, encode(element), ",")
-    }
-    return(paste0('{ "arrayValue": { "values" : [', str, '] } }'))
-  }
-
-  if(is.null(value))
-    return(paste0('{ "nullValue": "', value, '" }'))
-
-  if(is.logical(value))
-    return(paste0('{ "booleanValue": "', value, '" }'))
-
-  if(is.integer(value))
-    return(paste0('{ "integerValue": "', value, '" }'))
-
-  if(is.double(value))
-    return(paste0('{ "doubleValue": "', value, '" }'))
-
-  #TODO check this type's correctness
-  if(is.numeric.Date(value))
-    return(paste0('{ "timestampValue": "', value, '" }'))
-
-  if(is.character(value))
-    return(paste0('{ "stringValue": "', value, '" }'))
-
-  #TODO Binary (byte) type is not included
-
-  # NOTE: We avoid doing an isinstance() check for a Document
-  #       here to avoid import cycles.
-  #TODO reference type
-  #TODO geo point type
-
-  if(is.list(value)){
-    str <- ''
-    for(name in names(value)){
-      str <- paste0(str,'"', name, '" : ', encode(value[[name]]), ', ')
-    }
-    #return(paste0('{', str, '}'))
-    return(paste0('{"df":{"mapValue":{"fields" : {', str, '}}}}'))
-  }
-
-  #TODO dict
-
-  stop('Cannot convert to a Firestore Value', value, 'Invalid type', typeof(value))
 }
