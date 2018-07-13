@@ -642,3 +642,29 @@ recursive_decode <- function(fields){
     }
   }
 }
+
+GetOauthCode <- function(){
+  code <- stringr::str_remove(get("QUERY_STRING", envir = oauth_redirected_request), ".*code=")
+  httpuv::stopServer(oauth_handle)
+  print(code)
+  return(code)
+}
+
+Oauth <- function(port, client_id){
+  oauth_handle <<- httpuv::startServer("127.0.0.1", port,
+                                       list(
+                                         call = function(req) {
+                                           oauth_redirected_request <<- req
+                                           list(
+                                             status = 200L,
+                                             headers = list(
+                                               'Content-Type' = 'text/html'
+                                             ),
+                                             body = 'You can close this window now and execute the GetOauthCode() function'
+                                           )
+                                         }
+                                       )
+  )
+  response <- httr::POST(url = paste0("https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdatastore&state=state_parameter_passthrough_value&redirect_uri=http%3A%2F%2F127.0.0.1:", port, "&access_type=offline&response_type=code&prompt=consent&client_id=", client_id))
+  browseURL(response$url)
+}
