@@ -643,14 +643,17 @@ recursive_decode <- function(fields){
   }
 }
 
-GetOauthCode <- function(){
-  code <- stringr::str_remove(get("QUERY_STRING", envir = oauth_redirected_request), ".*code=")
-  httpuv::stopServer(oauth_handle)
-  print(code)
-  return(code)
-}
-
-Oauth <- function(port, client_id){
+#' @title Authenticating through OAuth 2.0
+#' @author Jiasheng Zhu
+#' @description Call this function before calling GetOauthCode(), make sure localhost:[port] is listed as an authorized redirect URIs on client id credentials
+#' @param client_id client_id from credentials of the project
+#' @param port The port that the local host is listening to, a default of 9001 is used
+#' @param access_type An offline access type is the default, alternative is online
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+Oauth <- function(client_id, port = 9001, access_type = "offline"){
   oauth_handle <<- httpuv::startServer("127.0.0.1", port,
                                        list(
                                          call = function(req) {
@@ -660,11 +663,32 @@ Oauth <- function(port, client_id){
                                              headers = list(
                                                'Content-Type' = 'text/html'
                                              ),
-                                             body = 'You can close this window now and execute the GetOauthCode() function'
+                                             body = 'You can close this window now and execute the GetOauthCode(port, client_id, client_secret) function'
                                            )
                                          }
                                        )
   )
-  response <- httr::POST(url = paste0("https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdatastore&state=state_parameter_passthrough_value&redirect_uri=http%3A%2F%2F127.0.0.1:", port, "&access_type=offline&response_type=code&prompt=consent&client_id=", client_id))
+  response <- httr::POST(url = paste0("https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdatastore&state=state_parameter_passthrough_value&redirect_uri=http%3A%2F%2F127.0.0.1:", port, "&access_type=", access_type, "&response_type=code&prompt=consent&client_id=", client_id))
   browseURL(response$url)
 }
+
+#' @title Get the OAuth 2.0 level access token
+#' @author Jiasheng Zhu
+#' @description Call this function after finishing the consent to Firestore at localhost (Oauth())
+#' @param client_id client_id from credentials of the project
+#' @param client_secret client_secret from credentials of the project
+#' @param port The port that the local host is listening to, a default of 9001 is used
+#' @return Access token
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+GetOauthCode <- function(client_id, client_secret, port = 9001){
+  #TODO check if Oauth has been called and the consent is given
+  code <- stringr::str_remove(get("QUERY_STRING", envir = oauth_redirected_request), ".*code=")
+  httpuv::stopServer(oauth_handle)
+  response <- httr::POST(url = paste0("https://www.googleapis.com/oauth2/v4/token?code=", code, "&client_id=", client_id, "&client_secret=", client_secret, "&grant_type=authorization_code&redirect_uri=http%3A%2F%2F127.0.0.1:", port))
+  response <- httr::content(response, "parsed")
+  return(response$access_token)
+}
+
