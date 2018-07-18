@@ -402,6 +402,41 @@ rollback <- function(projectID, transaction, databaseID = "(default)", token = "
   return(Response)
 }
 
+#' @title The firestore list collectionID function
+#' @author Jiasheng Zhu
+#' @description Lists all the collection IDs underneath a document
+#' @param projectID The Firestore project ID {string}
+#' @param documentPath path to a document {string}
+#' @param pageSize The maximum number of collection ids to receive in a transaction
+#' @param databaseID The database under which this operation will be performed {string}
+#' @param pageToken A page token. Used to identify a previous list collectionIDs operation {string}
+#' @param token The user access token that can be retrieved with the auth() function.
+#' An OAuth 2.0 access token is required for listCollectionIDs. {string}
+#' @return A HTTP response that contains the collectionIDs and a nextPageToken
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+listCollectionIds <- function(projectID, documentPath, pageSize, databaseID = "(default)", pageToken = "none", token = "none") {
+  if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
+    documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
+  }
+  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath, ":listCollectionIds")
+  request_body <- paste0("{pageSize: ", pageSize)
+  if(pageToken == "none"){
+    request_body <- paste0(request_body, "}")
+  } else {
+    request_body <- paste0(request_body, ", pageToken: ", pageToken, "}")
+  }
+  if (token == "none") {
+    Response <- httr::POST(url = URL, body = request_body)
+  } else {
+    token <- paste0(authPrefix, token)
+    Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = request_body)
+  }
+  return(Response)
+}
+
 #' @title Generate Firestore document
 #' @author Jiasheng Zhu
 #' @description Convert data frame to a Firestore document
