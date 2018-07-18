@@ -698,7 +698,7 @@ Oauth <- function(client_id, port = 9001, access_type = "offline"){
                                              headers = list(
                                                'Content-Type' = 'text/html'
                                              ),
-                                             body = 'You can close this window now and execute the GetOauthCode(port, client_id, client_secret) function'
+                                             body = 'You can close this window now and execute the GetOauthCode(client_id, client_secret) function'
                                            )
                                          }
                                        )
@@ -719,11 +719,10 @@ Oauth <- function(client_id, port = 9001, access_type = "offline"){
 #' \dontrun{
 #' }
 GetOauthCode <- function(client_id, client_secret, port = 9001){
-  #TODO check if Oauth has been called and the consent is given
+  if(!exists("oauth_redirected_request")) stop("You must run Oauth() and consent first")
   code <- stringr::str_remove(get("QUERY_STRING", envir = oauth_redirected_request), ".*code=")
   httpuv::stopServer(oauth_handle)
   response <- httr::POST(url = paste0("https://www.googleapis.com/oauth2/v4/token?code=", code, "&client_id=", client_id, "&client_secret=", client_secret, "&grant_type=authorization_code&redirect_uri=http%3A%2F%2F127.0.0.1:", port))
   response <- httr::content(response, "parsed")
   return(response$access_token)
 }
-
