@@ -407,7 +407,7 @@ rollback <- function(projectID, transaction, databaseID = "(default)", token = "
 #' @description Lists all the collection IDs underneath a document
 #' @param projectID The Firestore project ID {string}
 #' @param documentPath path to a document {string}
-#' @param pageSize The maximum number of collection ids to receive in a transaction
+#' @param pageSize The maximum number of collection ids to return
 #' @param databaseID The database under which this operation will be performed {string}
 #' @param pageToken A page token. Used to identify a previous list collectionIDs operation {string}
 #' @param token The user access token that can be retrieved with the auth() function.
@@ -433,6 +433,50 @@ listCollectionIds <- function(projectID, documentPath, pageSize, databaseID = "(
   } else {
     token <- paste0(authPrefix, token)
     Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = request_body)
+  }
+  return(Response)
+}
+
+#' @title The firestore list function
+#' @author Jiasheng Zhu
+#' @description Lists all documents underneath a collection id
+#' @param projectID The Firestore project ID {string}
+#' @param collectionPath path to a collection {string}
+#' @param pageSize The maximum number of documents to return
+#' @param databaseID The database under which this operation will be performed {string}
+#' @param pageToken A page token. Used to identify a previous list collectionIDs operation {string}
+#' @param orderBy The order to sort results by, for example, priority desc, name{string}
+#' @param showMissing If the list should show missing documents.
+#' A missing document is a document that does not exist but has sub-documents.
+#' These documents will be returned with a key but will not have fields, Document.create_time, or Document.update_time set.
+#' Requests with showMissing may not specify where or orderBy.
+#' @param token The user access token that can be retrieved with the auth() function.
+#' An OAuth 2.0 access token is required for listCollectionIDs. {string}
+#' @return A HTTP response that contains the documents and a nextPageToken
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+listDocuments <- function(projectID, collectionPath, pageSize, databaseID = "(default)", pageToken = "none", orderBy = "none", showMissing = FALSE, token = "none") {
+  if(substring(collectionPath, nchar(collectionPath), nchar(collectionPath)) == "/"){
+    collectionPath <- substring(collectionPath, 0, nchar(collectionPath)-1)
+  }
+  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, collectionPath, "?pageSize=", pageSize)
+  if(pageToken != "none"){
+    URL <- paste0(URL, "&pageToken=", pageToken)
+  }
+  if(orderBy != "none"){
+    URL <- paste0(URL, "&orderBy=", orderBy)
+  }
+  else if(showMissing){
+    URL <- paste0(URL, "&showMissing=TRUE")
+  }
+
+  if (token == "none") {
+    Response <- httr::GET(url = URL)
+  } else {
+    token <- paste0(authPrefix, token)
+    Response <- httr::GET(url = URL, httr::add_headers(Authorization = token))
   }
   return(Response)
 }
