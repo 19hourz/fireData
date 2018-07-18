@@ -3,3 +3,4 @@
 .RData
 LICENCE
 inst/doc
+.httr-oauth
