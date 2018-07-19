@@ -481,6 +481,94 @@ listDocuments <- function(projectID, collectionPath, pageSize, databaseID = "(de
   return(Response)
 }
 
+#' @title The firestore batch get function
+#' @author Jiasheng Zhu
+#' @description Get multiple documents by names
+#' @param projectID The Firestore project ID {string}
+#' @param documents A vector consists of documents names in the format projects/(projectId)/databases/(databaseId)/documents/(document_path) {string}
+#' @param databaseID The database under which this operation will be performed {string}
+#' @param mask The fields to return. If not set, returns all fields. {string}
+#' @param transaction Reads documents in a transaction {string}
+#' @param newTransaction Starts a new transaction and reads the documents.
+#' Defaults to a read-only transaction. The new transaction ID will be returned as the first response in the stream.{string}
+#' @param readTime Reads documents as they were at the given time. This may not be older than 60 seconds. {string}
+#' @param token The user access token that can be retrieved with the auth() function.
+#' An OAuth 2.0 access token is required for listCollectionIDs. {string}
+#' @return A HTTP response that contains the documents, transaction, readTime and missing documents
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+batchGetDocuments <- function(projectID, documents, databaseID = "(default)", mask = "none", transaction = "none", newTransaction = "none", readTime = "none", token = "none"){
+  URL = paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents:batchGet")
+  request <- list()
+  request$documents <- documents
+  if(mask != "none"){
+    request$mask <- mask
+  }
+  if(transaction != "none"){
+    request$transaction <- transaction
+  }
+  if(newTransaction != "none"){
+    request$newTransaction <- newTransaction
+  }
+  if(readTime != "none"){
+    request$readTime <- readTime
+  }
+  if (token == "none") {
+    Response <- httr::POST(url = URL, body = jsonlite::toJSON(request))
+  } else {
+    token <- paste0(authPrefix, token)
+    Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = jsonlite::toJSON(request))
+  }
+  return(Response)
+}
+
+#' @title The firestore run query function
+#' @author Jiasheng Zhu
+#' @description Run a query
+#' @param projectID The Firestore project ID {string}
+#' @param query Strutured query {string}
+#' @param documentPath path to a document, optional {string}
+#' @param databaseID The database under which this operation will be performed {string}
+#' @param transaction Reads documents in a transaction {string}
+#' @param newTransaction Starts a new transaction and reads the documents.
+#' Defaults to a read-only transaction. The new transaction ID will be returned as the first response in the stream.{string}
+#' @param readTime Reads documents as they were at the given time. This may not be older than 60 seconds. {string}
+#' @param token The user access token that can be retrieved with the auth() function.
+#' An OAuth 2.0 access token is required for listCollectionIDs. {string}
+#' @return A HTTP response that contains the documents, transaction, readTime and missing documents
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+runQuery <- function(projectID, query, documentPath = "none", databaseID = "(default)", transaction = "none", newTransaction = "none", readTime = "none", token = "none"){
+  URL = paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents")
+  if(documentPath == "none"){
+    URL = paste0(URL, ":runQuery")
+  } else {
+    URL = paste0(URL, "/", documentPath, ":runQuery")
+  }
+  request <- list()
+  request$structuredQuery <- query
+  if(transaction != "none"){
+    request$transaction <- transaction
+  }
+  if(newTransaction != "none"){
+    request$newTransaction <- newTransaction
+  }
+  if(readTime != "none"){
+    request$readTime <- readTime
+  }
+  if (token == "none") {
+    Response <- httr::POST(url = URL, body = jsonlite::toJSON(request))
+  } else {
+    token <- paste0(authPrefix, token)
+    Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = jsonlite::toJSON(request))
+  }
+  return(Response)
+}
+
 #' @title Generate Firestore document
 #' @author Jiasheng Zhu
 #' @description Convert data frame to a Firestore document
@@ -494,7 +582,7 @@ listDocuments <- function(projectID, collectionPath, pageSize, databaseID = "(de
 #' @examples
 #' \dontrun{
 #' }
-generateDocument <- function(data, max_digits = NA, auto_unbox = TRUE, name = "none") {
+generateDocument <- function(data, name = "none") {
   field <- encode(data)
   if(name == "none") {
     document = paste0('{"fields":', field, '}')
