@@ -516,10 +516,10 @@ batchGetDocuments <- function(projectID, documents, databaseID = "(default)", ma
     request$readTime <- readTime
   }
   if (token == "none") {
-    Response <- httr::POST(url = URL, body = jsonlite::toJSON(request))
+    Response <- httr::POST(url = URL, body = jsonlite::toJSON(request, auto_unbox = TRUE))
   } else {
     token <- paste0(authPrefix, token)
-    Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = jsonlite::toJSON(request))
+    Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = jsonlite::toJSON(request, auto_unbox = TRUE))
   }
   return(Response)
 }
@@ -561,13 +561,14 @@ runQuery <- function(projectID, query, documentPath = "none", databaseID = "(def
     request$readTime <- readTime
   }
   if (token == "none") {
-    Response <- httr::POST(url = URL, body = jsonlite::toJSON(request))
+    Response <- httr::POST(url = URL, body = jsonlite::toJSON(request, auto_unbox = TRUE))
   } else {
     token <- paste0(authPrefix, token)
-    Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = jsonlite::toJSON(request))
+    Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = jsonlite::toJSON(request, auto_unbox = TRUE))
   }
   return(Response)
 }
+
 
 #' @title Generate Firestore document
 #' @author Jiasheng Zhu
