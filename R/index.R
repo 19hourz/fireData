@@ -569,6 +569,74 @@ runQuery <- function(projectID, query, documentPath = "none", databaseID = "(def
   return(Response)
 }
 
+#' Index methods
+
+#' @title The firestore indexField function
+#' @author Jiasheng Zhu
+#' @description Create an indexField
+#' @param fieldPath The path of the field. Must match the field path specification described
+#' by [google.firestore.v1beta1.Document.fields][fields]. Special field path __name__ may be
+#' used by itself or at the end of a path. __type__ may be used only at the end of path. {string}
+#' @param mode one of ASCENDING or DESCENDING {string}
+#' @return returns an index field
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+indexField <- function(fieldPath, mode = "MODE_UNSPECIFIED"){
+  if(mode == "MODE_UNSPECIFIED"){
+    stop("Please specify a mode")
+  }
+
+  field <- list()
+  field$fieldPath <- fieldPath
+  field$mode <- mode
+
+  return(jsonlite::toJSON(field, auto_unbox = TRUE))
+}
+
+#' @title The firestore index function
+#' @author Jiasheng Zhu
+#' @description Create an index
+#' @param collectionID The collection ID to which this index applies {string}
+#' @param fields The fields to index {string}
+#' @return returns a json representation of the index
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+index <- function(collectionID, fields){
+  index_json <- paste0('{"collectionId":"', collectionID, '","fields": [')
+  for(field in fields){
+    index_json <- paste0(index_json, field, ",")
+  }
+  index_json <- paste0(index_json, ']}')
+  return(index_json)
+}
+
+#' @title The firestore create index function
+#' @author Jiasheng Zhu
+#' @description Create an index on firestore
+#' @param projectID The Firestore project ID {string}
+#' @param index representation of an index {string}
+#' @param databaseID The database under which this operation will be performed {string}
+#' @param token The user access token that can be retrieved with the auth() function.
+#' An OAuth 2.0 access token is required for listCollectionIDs. {string}
+#' @return A response that contains the status of the operation
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+createIndex <- function(projectID, index, databaseID = "(default)", token = "none"){
+  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/indexes")
+  if (token == "none") {
+    Response <- httr::POST(url = URL, body = index)
+  } else {
+    token <- paste0(authPrefix, token)
+    Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = index)
+  }
+  return(Response)
+}
 
 #' @title Generate Firestore document
 #' @author Jiasheng Zhu
