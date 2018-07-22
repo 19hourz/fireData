@@ -638,6 +638,83 @@ createIndex <- function(projectID, index, databaseID = "(default)", token = "non
   return(Response)
 }
 
+#' @title The firestore delete index function
+#' @author Jiasheng Zhu
+#' @description Delete an index on firestore
+#' @param projectID The Firestore project ID {string}
+#' @param indexID ID of the index to delete {string}
+#' @param databaseID The database under which this operation will be performed {string}
+#' @param token The user access token {string}
+#' @return If successful, the response body will be empty
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+deleteIndex <- function(projectID, indexID, databaseID = "(default)", token = "none"){
+  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/indexes/", indexID)
+  if (token == "none") {
+    Response <- httr::DELETE(url = URL)
+  } else {
+    token <- paste0(authPrefix, token)
+    Response <- httr::DELETE(url = URL, httr::add_headers(Authorization = token))
+  }
+  return(Response)
+}
+
+#' @title The firestore get index function
+#' @author Jiasheng Zhu
+#' @description Get an index on firestore
+#' @param projectID The Firestore project ID {string}
+#' @param indexID ID of the index to delete {string}
+#' @param databaseID The database under which this operation will be performed {string}
+#' @param token The user access token {string}
+#' @return If successful, the response body will contain an instance of the index
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+getIndex <- function(projectID, indexID, databaseID = "(default)", token = "none"){
+  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/indexes/", indexID)
+  if (token == "none") {
+    Response <- httr::GET(url = URL)
+  } else {
+    token <- paste0(authPrefix, token)
+    Response <- httr::GET(url = URL, httr::add_headers(Authorization = token))
+  }
+  return(Response)
+}
+
+#' @title The firestore get index function
+#' @author Jiasheng Zhu
+#' @description Get an index on firestore
+#' @param projectID The Firestore project ID {string}
+#' @param indexID ID of the index to delete {string}
+#' @param filter string used to filter index {string}
+#' @param pageSize The standard List page size
+#' @param pageToken The standard List page token {string}
+#' @param databaseID The database under which this operation will be performed {string}
+#' @param token The user access token {string}
+#' @return If successful, the response body will be empty
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+listIndex <- function(projectID, filter, pageSize, pageToken = "none", databaseID = "(default)", token = "none"){
+  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/indexes?filter=", filter, "&pageSize=", pageSize)
+
+  if (pageToken != "none") {
+    URL <- paste0(URL, "&pageToken=", pageToken)
+  }
+
+  if (token == "none") {
+    Response <- httr::GET(url = URL)
+  } else {
+    token <- paste0(authPrefix, token)
+    Response <- httr::GET(url = URL, httr::add_headers(Authorization = token))
+  }
+  return(Response)
+}
+
 #' @title Generate Firestore document
 #' @author Jiasheng Zhu
 #' @description Convert data frame to a Firestore document
