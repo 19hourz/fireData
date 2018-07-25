@@ -283,7 +283,7 @@ getDocument <- function(projectID, documentPath, databaseID = "(default)", token
     token <- paste0(authPrefix, token)
     Response <- httr::GET(url = URL, httr::add_headers(Authorization = token))
   }
-  if(parse){
+  if(decode){
     return(decode(Response))
   } else {
     return(Response)
