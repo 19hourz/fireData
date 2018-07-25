@@ -1,41 +1,21 @@
 library("testthat")
 library("fireData")
 
-test_that("Test the Firebase creating document functionality", {
-  response <- createDocument("gsoc2018-d05d8", "test",documentName = "testcreate", databaseID = "test2")
-  response <-httr::content(response, "parsed")
-  expect_null(response$error)
-})
-
-test_that("Test the Firebase deleting document functionality", {
-  response <- deleteDocument("gsoc2018-d05d8", "test/", "testcreate")
+test_that("Test Firestore creating document and get functionality with a single data frame", {
+  df <- data.frame(matrix(rnorm(20), nrow=10))
+  response <- createDocument("gsoc2018-d05d8", "test",df, documentName = "test_create")
   response <- httr::content(response, "parsed")
   expect_null(response$error)
-})
-
-test_that("Test the Firebase getting document functionality", {
-  response <- getDocument("gsoc2018-d05d8", "test/trythis")
-  response <- httr::content(response, "parsed")
-  expect_null(response$error)
-})
-
-test_that("Test the Firebase patching document functionality", {
-  json = '{"name": "projects/gsoc2018-d05d8/databases/(default)/documents/test/trythis",
-  "fields": {
-    "a": {
-      "mapValue": {
-        "fields": {
-          "a": {
-            "stringValue": "a"
-          },
-          "b": {
-            "integerValue": "1"
-          }
-        }
-      }
+  response <- getDocument("gsoc2018-d05d8", "test/test_create")
+  deleteDocument("gsoc2018-d05d8", "test/test_create")
+  if(is.data.frame(response)){
+    if(all(df - response <= 1e-5)){
+      succeed("Create and get produce same output")
+    } else {
+      fail("There are discrenpancies between original data frame and the one retrived")
     }
-  }}'
-  response <- patchDocument("gsoc2018-d05d8", "test/trythisaswell", json)
-  response <- httr::content(response, "parsed")
-  expect_null(response$error)
+  } else {
+    fail("the returned response is not of type data frame")
+    print(response)
+  }
 })
