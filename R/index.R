@@ -310,7 +310,7 @@ listDocuments <- function(projectID, collectionPath, pageSize, databaseID = "(de
   if(substring(collectionPath, nchar(collectionPath), nchar(collectionPath)) == "/"){
     collectionPath <- substring(collectionPath, 0, nchar(collectionPath)-1)
   }
-  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, collectionPath, "?pageSize=", pageSize)
+  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", collectionPath, "?pageSize=", pageSize)
   if(pageToken != "none"){
     URL <- paste0(URL, "&pageToken=", pageToken)
   }
@@ -324,7 +324,7 @@ listDocuments <- function(projectID, collectionPath, pageSize, databaseID = "(de
   if (token == "none") {
     Response <- httr::GET(url = URL)
   } else {
-    token <- paste0(authPrefix, token)
+    token <- paste0("Bearer ", token)
     Response <- httr::GET(url = URL, httr::add_headers(Authorization = token))
   }
   return(Response)
