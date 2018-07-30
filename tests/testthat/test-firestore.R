@@ -89,8 +89,52 @@ test_that("Test Firestore creating document and get functionality with array", {
   expect_null(response$error)
 })
 
+# test list
+
 test_that("Test Firestore list documents", {
   response <- listDocuments(projectID, "test", 1)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
 })
+
+# test patch
+
+test_that("Test Firestore patch documents", {
+  df <- data.frame(matrix(rnorm(20), nrow=10))
+  response <- createDocument(projectID, "test",df, documentName = "test_patch")
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+  response <- getDocument(projectID, "test/test_patch")
+  if(is.data.frame(response)){
+    if(all(df - response <= 1e-5)){
+      succeed("Create and get produce same output")
+    } else {
+      fail("There are discrenpancies between original data frame and the one retrived")
+    }
+  } else {
+    fail("the returned response is not of type data frame")
+    print(response)
+  }
+
+  df <- data.frame(matrix(rnorm(20), nrow=10))
+  response <- patchDocument(projectID, "test/test_patch", df)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+
+  response <- getDocument(projectID, "test/test_patch")
+  if(is.data.frame(response)){
+    if(all(df - response <= 1e-5)){
+      succeed("Create and get produce same output")
+    } else {
+      fail("There are discrenpancies between original data frame and the one retrived")
+    }
+  } else {
+    fail("the returned response is not of type data frame")
+    print(response)
+  }
+
+  response <- deleteDocument(projectID, "test/test_patch")
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+})
+

@@ -344,19 +344,15 @@ listDocuments <- function(projectID, collectionPath, pageSize, databaseID = "(de
 #' \dontrun{
 #' }
 patchDocument <- function(projectID, documentPath, document, databaseID = "(default)", token = "none") {
-  if(is.data.frame(document)){
-    document <- generateDocument(document, name = paste0(projects, projectID, "/", databaseID, "/", documents, documentPath))
-  } else if(!is.character(document)){
-    stop("Only supports data frame or string as document types")
-  }
+  document <- generateDocument(document, name = paste0(projects, projectID, "/", databaseID, "/", documents, documentPath))
   if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
     documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
   }
-  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath)
+  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", documentPath)
   if (token == "none") {
     Response <- httr::PATCH(url = URL, body = document)
   } else {
-    token <- paste0(authPrefix, token)
+    token <- paste0("Bearer ", token)
     Response <- httr::PATCH(url = URL, httr::add_headers(Authorization = token), body = document)
   }
   return(Response)
