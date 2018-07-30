@@ -19,8 +19,6 @@ test_that("Test Firestore creating document and get functionality with a single 
     fail("the returned response is not of type data frame")
     print(response)
   }
-  response <- httr::content(response, "parsed")
-  expect_null(response$error)
   response <- deleteDocument("gsoc2018-d05d8", "test/test_create")
   response <- httr::content(response, "parsed")
   expect_null(response$error)
@@ -42,8 +40,6 @@ test_that("Test Firestore creating document and get functionality with vector", 
     fail("the returned response is not of type vector")
     print(response)
   }
-  response <- httr::content(response, "parsed")
-  expect_null(response$error)
   response <- deleteDocument("gsoc2018-d05d8", "test/test_vector")
   response <- httr::content(response, "parsed")
   expect_null(response$error)
@@ -65,8 +61,6 @@ test_that("Test Firestore creating document and get functionality with matrix", 
     fail("the returned response is not of type matrix")
     print(response)
   }
-  response <- httr::content(response, "parsed")
-  expect_null(response$error)
   response <- deleteDocument("gsoc2018-d05d8", "test/test_matrix")
   response <- httr::content(response, "parsed")
   expect_null(response$error)
@@ -88,8 +82,6 @@ test_that("Test Firestore creating document and get functionality with array", {
     fail("the returned response is not of type array")
     print(response)
   }
-  response <- httr::content(response, "parsed")
-  expect_null(response$error)
   response <- deleteDocument("gsoc2018-d05d8", "test/test_array")
   response <- httr::content(response, "parsed")
   expect_null(response$error)
