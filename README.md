@@ -4,12 +4,10 @@
 [![codecov](https://codecov.io/gh/19hourz/fireData/branch/master/graph/badge.svg)](https://codecov.io/gh/19hourz/fireData)
 
 # Firedata - Enabling easy cloud stats through Firestore
-======
 
 This project is part of Firedata that adds support for Google Cloud Firestore. Methods are implemented through Google Firestore REST API. Before using, please set up Firebase accordingly. Certain functions requires using OAuth 2.0 access token. To gain the access token, credentials of the project will be needed and can be found from [here](https://console.developers.google.com/apis/credentials). Firestore brought additional features upon realtime database such as querying.
 
 ## Setup
-======
 
 **Firestore Setup:**
 - visit at https://firebase.google.com/
@@ -28,4 +26,3 @@ library(fireData)
 ```
 
 ## Examples
-======
