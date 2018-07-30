@@ -213,23 +213,19 @@ authPrefix <- "Bearer "
 #' \dontrun{
 #' }
 createDocument <- function(projectID, documentPath, document, documentName = "none", databaseID = "(default)", token = "none") {
-  if(is.data.frame(document)){
-    document <- generateDocument(document)
-  } else if(!is.character(document)){
-    stop("Only supports data frame or string as document types")
-  }
+  document <- generateDocument(document)
   if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
     documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
   }
   if (documentName == "none") {
-    URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath)
+    URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", documentPath)
   } else {
-    URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath, "?documentId=", documentName)
+    URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", documentPath, "?documentId=", documentName)
   }
   if (token == "none") {
     Response <- httr::POST(url = URL, body = document)
   } else {
-    token <- paste0(authPrefix, token)
+    token <- paste0("Bearer ", token)
     Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = document)
   }
   return(Response)
@@ -249,11 +245,11 @@ createDocument <- function(projectID, documentPath, document, documentName = "no
 #' response <- deleteDocument("gsoc2018-d05d8", documentPath = "this/trythis")
 #' }
 deleteDocument <- function(projectID, documentPath, databaseID = "(default)", token = "none") {
-  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath)
+  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", documentPath)
   if (token == "none") {
     Response <- httr::DELETE(url = URL)
   } else {
-    token <- paste0(authPrefix, token)
+    token <- paste0("Bearer ", token)
     Response <- httr::DELETE(url = URL, httr::add_headers(Authorization = token))
   }
   return(Response)
@@ -276,11 +272,11 @@ getDocument <- function(projectID, documentPath, databaseID = "(default)", token
   if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
     documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
   }
-  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath)
+  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", documentPath)
   if (token == "none") {
     Response <- httr::GET(url = URL)
   } else {
-    token <- paste0(authPrefix, token)
+    token <- paste0("Bearer ", token)
     Response <- httr::GET(url = URL, httr::add_headers(Authorization = token))
   }
   if(decode){
@@ -288,6 +284,50 @@ getDocument <- function(projectID, documentPath, databaseID = "(default)", token
   } else {
     return(Response)
   }
+}
+
+#' @title The firestore list function
+#' @author Jiasheng Zhu
+#' @description Lists all documents underneath a collection id
+#' @param projectID The Firestore project ID {string}
+#' @param collectionPath path to a collection {string}
+#' @param pageSize The maximum number of documents to return
+#' @param databaseID The database under which this operation will be performed {string}
+#' @param pageToken A page token. Used to identify a previous list collectionIDs operation {string}
+#' @param orderBy The order to sort results by, for example, priority desc, name{string}
+#' @param showMissing If the list should show missing documents.
+#' A missing document is a document that does not exist but has sub-documents.
+#' These documents will be returned with a key but will not have fields, Document.create_time, or Document.update_time set.
+#' Requests with showMissing may not specify where or orderBy.
+#' @param token The user access token that can be retrieved with the auth() function.
+#' An OAuth 2.0 access token is required for listCollectionIDs. {string}
+#' @return A HTTP response that contains the documents and a nextPageToken
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+listDocuments <- function(projectID, collectionPath, pageSize, databaseID = "(default)", pageToken = "none", orderBy = "none", showMissing = FALSE, token = "none") {
+  if(substring(collectionPath, nchar(collectionPath), nchar(collectionPath)) == "/"){
+    collectionPath <- substring(collectionPath, 0, nchar(collectionPath)-1)
+  }
+  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, collectionPath, "?pageSize=", pageSize)
+  if(pageToken != "none"){
+    URL <- paste0(URL, "&pageToken=", pageToken)
+  }
+  if(orderBy != "none"){
+    URL <- paste0(URL, "&orderBy=", orderBy)
+  }
+  else if(showMissing){
+    URL <- paste0(URL, "&showMissing=TRUE")
+  }
+
+  if (token == "none") {
+    Response <- httr::GET(url = URL)
+  } else {
+    token <- paste0(authPrefix, token)
+    Response <- httr::GET(url = URL, httr::add_headers(Authorization = token))
+  }
+  return(Response)
 }
 
 #' @title The firestore patch function
@@ -433,50 +473,6 @@ listCollectionIds <- function(projectID, documentPath, pageSize, databaseID = "(
   } else {
     token <- paste0(authPrefix, token)
     Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = request_body)
-  }
-  return(Response)
-}
-
-#' @title The firestore list function
-#' @author Jiasheng Zhu
-#' @description Lists all documents underneath a collection id
-#' @param projectID The Firestore project ID {string}
-#' @param collectionPath path to a collection {string}
-#' @param pageSize The maximum number of documents to return
-#' @param databaseID The database under which this operation will be performed {string}
-#' @param pageToken A page token. Used to identify a previous list collectionIDs operation {string}
-#' @param orderBy The order to sort results by, for example, priority desc, name{string}
-#' @param showMissing If the list should show missing documents.
-#' A missing document is a document that does not exist but has sub-documents.
-#' These documents will be returned with a key but will not have fields, Document.create_time, or Document.update_time set.
-#' Requests with showMissing may not specify where or orderBy.
-#' @param token The user access token that can be retrieved with the auth() function.
-#' An OAuth 2.0 access token is required for listCollectionIDs. {string}
-#' @return A HTTP response that contains the documents and a nextPageToken
-#' @export
-#' @examples
-#' \dontrun{
-#' }
-listDocuments <- function(projectID, collectionPath, pageSize, databaseID = "(default)", pageToken = "none", orderBy = "none", showMissing = FALSE, token = "none") {
-  if(substring(collectionPath, nchar(collectionPath), nchar(collectionPath)) == "/"){
-    collectionPath <- substring(collectionPath, 0, nchar(collectionPath)-1)
-  }
-  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, collectionPath, "?pageSize=", pageSize)
-  if(pageToken != "none"){
-    URL <- paste0(URL, "&pageToken=", pageToken)
-  }
-  if(orderBy != "none"){
-    URL <- paste0(URL, "&orderBy=", orderBy)
-  }
-  else if(showMissing){
-    URL <- paste0(URL, "&showMissing=TRUE")
-  }
-
-  if (token == "none") {
-    Response <- httr::GET(url = URL)
-  } else {
-    token <- paste0(authPrefix, token)
-    Response <- httr::GET(url = URL, httr::add_headers(Authorization = token))
   }
   return(Response)
 }
@@ -954,53 +950,4 @@ recursive_decode <- function(fields){
       stop('Cannot convert to a Firestore Value ', fields, 'Invalid type', names(fields))
     }
   }
-}
-
-#' @title Authenticating through OAuth 2.0
-#' @author Jiasheng Zhu
-#' @description Call this function before calling GetOauthCode(), make sure localhost:[port] is listed as an authorized redirect URIs on client id credentials
-#' @param client_id client_id from credentials of the project
-#' @param port The port that the local host is listening to, a default of 9001 is used
-#' @param access_type An offline access type is the default, alternative is online
-#' @export
-#' @examples
-#' \dontrun{
-#' }
-Oauth <- function(client_id, port = 9001, access_type = "offline"){
-  oauth_handle <<- httpuv::startServer("127.0.0.1", port,
-                                       list(
-                                         call = function(req) {
-                                           oauth_redirected_request <<- req
-                                           list(
-                                             status = 200L,
-                                             headers = list(
-                                               'Content-Type' = 'text/html'
-                                             ),
-                                             body = 'You can close this window now and execute the GetOauthCode(client_id, client_secret) function'
-                                           )
-                                         }
-                                       )
-  )
-  response <- httr::POST(url = paste0("https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdatastore&state=state_parameter_passthrough_value&redirect_uri=http%3A%2F%2F127.0.0.1:", port, "&access_type=", access_type, "&response_type=code&prompt=consent&client_id=", client_id))
-  browseURL(response$url)
-}
-
-#' @title Get the OAuth 2.0 level access token
-#' @author Jiasheng Zhu
-#' @description Call this function after finishing the consent to Firestore at localhost (Oauth())
-#' @param client_id client_id from credentials of the project
-#' @param client_secret client_secret from credentials of the project
-#' @param port The port that the local host is listening to, a default of 9001 is used
-#' @return Access token
-#' @export
-#' @examples
-#' \dontrun{
-#' }
-GetOauthCode <- function(client_id, client_secret, port = 9001){
-  if(!exists("oauth_redirected_request")) stop("You must run Oauth() and consent first")
-  code <- stringr::str_remove(get("QUERY_STRING", envir = oauth_redirected_request), ".*code=")
-  httpuv::stopServer(oauth_handle)
-  response <- httr::POST(url = paste0("https://www.googleapis.com/oauth2/v4/token?code=", code, "&client_id=", client_id, "&client_secret=", client_secret, "&grant_type=authorization_code&redirect_uri=http%3A%2F%2F127.0.0.1:", port))
-  response <- httr::content(response, "parsed")
-  return(response$access_token)
 }
