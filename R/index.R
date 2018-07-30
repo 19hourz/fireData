@@ -212,8 +212,10 @@ authPrefix <- "Bearer "
 #' @examples
 #' \dontrun{
 #' }
-createDocument <- function(projectID, documentPath, document, documentName = "none", databaseID = "(default)", token = "none") {
-  document <- generateDocument(document)
+createDocument <- function(projectID, documentPath, document = "none", documentName = "none", databaseID = "(default)", token = "none") {
+  if(document != "none"){
+    document <- generateDocument(document)
+  }
   if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
     documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
   }
@@ -223,10 +225,18 @@ createDocument <- function(projectID, documentPath, document, documentName = "no
     URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", documentPath, "?documentId=", documentName)
   }
   if (token == "none") {
-    Response <- httr::POST(url = URL, body = document)
+    if(document != "none"){
+      Response <- httr::POST(url = URL, body = document)
+    } else {
+      Response <- httr::POST(url = URL)
+    }
   } else {
     token <- paste0("Bearer ", token)
-    Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = document)
+    if(document != "none"){
+      Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = document)
+    } else {
+      Response <- httr::POST(url = URL, httr::add_headers(Authorization = token))
+    }
   }
   return(Response)
 }
@@ -330,6 +340,49 @@ listDocuments <- function(projectID, collectionPath, pageSize, databaseID = "(de
   return(Response)
 }
 
+#' @title The firestore batch get function
+#' @author Jiasheng Zhu
+#' @description Get multiple documents by names
+#' @param projectID The Firestore project ID {string}
+#' @param documents A vector consists of documents names in the format projects/(projectId)/databases/(databaseId)/documents/(document_path) {string}
+#' @param databaseID The database under which this operation will be performed {string}
+#' @param mask The fields to return. If not set, returns all fields. {string}
+#' @param transaction Reads documents in a transaction {string}
+#' @param newTransaction Starts a new transaction and reads the documents.
+#' Defaults to a read-only transaction. The new transaction ID will be returned as the first response in the stream.{string}
+#' @param readTime Reads documents as they were at the given time. This may not be older than 60 seconds. {string}
+#' @param token The user access token that can be retrieved with the auth() function.
+#' An OAuth 2.0 access token is required for listCollectionIDs. {string}
+#' @return A HTTP response that contains the documents, transaction, readTime and missing documents
+#' @export
+#' @examples
+#' \dontrun{
+#' }
+batchGetDocuments <- function(projectID, documents, databaseID = "(default)", mask = "none", transaction = "none", newTransaction = "none", readTime = "none", token = "none"){
+  URL = paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents:batchGet")
+  request <- list()
+  request$documents <- documents
+  if(mask != "none"){
+    request$mask <- mask
+  }
+  if(transaction != "none"){
+    request$transaction <- transaction
+  }
+  if(newTransaction != "none"){
+    request$newTransaction <- newTransaction
+  }
+  if(readTime != "none"){
+    request$readTime <- readTime
+  }
+  if (token == "none") {
+    Response <- httr::POST(url = URL, body = jsonlite::toJSON(request, auto_unbox = TRUE))
+  } else {
+    token <- paste0("Bearer ", token)
+    Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = jsonlite::toJSON(request, auto_unbox = TRUE))
+  }
+  return(Response)
+}
+
 #' @title The firestore patch function
 #' @author Jiasheng Zhu
 #' @description Patch single document
@@ -375,11 +428,11 @@ beginTransaction <- function(projectID, options, databaseID = "(default)", token
   if(substring(databaseID, nchar(databaseID), nchar(databaseID)) != "/"){
     databaseID <- paste0(databaseID, "/")
   }
-  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "documents:rollback")
+  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "documents:beginTransaction")
   if (token == "none") {
     Response <- httr::POST(url = URL, body = options)
   } else {
-    token <- paste0(authPrefix, token)
+    token <- paste0("Bearer ", token)
     Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = options)
   }
   return(Response)
@@ -401,11 +454,11 @@ commit <- function(projectID, options, databaseID = "(default)", token = "none")
   if(substring(databaseID, nchar(databaseID), nchar(databaseID)) != "/"){
     databaseID <- paste0(databaseID, "/")
   }
-  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "documents:commit")
+  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "documents:commit")
   if (token == "none") {
     Response <- httr::POST(url = URL, body = options)
   } else {
-    token <- paste0(authPrefix, token)
+    token <- paste0("Bearer ", token)
     Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = options)
   }
   return(Response)
@@ -427,12 +480,12 @@ rollback <- function(projectID, transaction, databaseID = "(default)", token = "
   if(substring(databaseID, nchar(databaseID), nchar(databaseID)) != "/"){
     databaseID <- paste0(databaseID, "/")
   }
-  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "documents:rollback")
+  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "documents:rollback")
   request_body <- paste0('{"transaction": "', transaction, '"}')
   if (token == "none") {
     Response <- httr::POST(url = URL)
   } else {
-    token <- paste0(authPrefix, token)
+    token <- paste0("Bearer ", token)
     Response <- httr::POST(url = URL, httr::add_headers(Authorization = token))
   }
   return(Response)
@@ -457,7 +510,7 @@ listCollectionIds <- function(projectID, documentPath, pageSize, databaseID = "(
   if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
     documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
   }
-  URL <- paste0(firestore_root, version_prefix, projects, projectID, "/", databases, databaseID, "/", documents, documentPath, ":listCollectionIds")
+  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", documentPath, ":listCollectionIds")
   request_body <- paste0("{pageSize: ", pageSize)
   if(pageToken == "none"){
     request_body <- paste0(request_body, "}")
@@ -467,54 +520,12 @@ listCollectionIds <- function(projectID, documentPath, pageSize, databaseID = "(
   if (token == "none") {
     Response <- httr::POST(url = URL, body = request_body)
   } else {
-    token <- paste0(authPrefix, token)
+    token <- paste0("Bearer ", token)
     Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = request_body)
   }
   return(Response)
 }
 
-#' @title The firestore batch get function
-#' @author Jiasheng Zhu
-#' @description Get multiple documents by names
-#' @param projectID The Firestore project ID {string}
-#' @param documents A vector consists of documents names in the format projects/(projectId)/databases/(databaseId)/documents/(document_path) {string}
-#' @param databaseID The database under which this operation will be performed {string}
-#' @param mask The fields to return. If not set, returns all fields. {string}
-#' @param transaction Reads documents in a transaction {string}
-#' @param newTransaction Starts a new transaction and reads the documents.
-#' Defaults to a read-only transaction. The new transaction ID will be returned as the first response in the stream.{string}
-#' @param readTime Reads documents as they were at the given time. This may not be older than 60 seconds. {string}
-#' @param token The user access token that can be retrieved with the auth() function.
-#' An OAuth 2.0 access token is required for listCollectionIDs. {string}
-#' @return A HTTP response that contains the documents, transaction, readTime and missing documents
-#' @export
-#' @examples
-#' \dontrun{
-#' }
-batchGetDocuments <- function(projectID, documents, databaseID = "(default)", mask = "none", transaction = "none", newTransaction = "none", readTime = "none", token = "none"){
-  URL = paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents:batchGet")
-  request <- list()
-  request$documents <- documents
-  if(mask != "none"){
-    request$mask <- mask
-  }
-  if(transaction != "none"){
-    request$transaction <- transaction
-  }
-  if(newTransaction != "none"){
-    request$newTransaction <- newTransaction
-  }
-  if(readTime != "none"){
-    request$readTime <- readTime
-  }
-  if (token == "none") {
-    Response <- httr::POST(url = URL, body = jsonlite::toJSON(request, auto_unbox = TRUE))
-  } else {
-    token <- paste0(authPrefix, token)
-    Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = jsonlite::toJSON(request, auto_unbox = TRUE))
-  }
-  return(Response)
-}
 
 #' @title The firestore run query function
 #' @author Jiasheng Zhu

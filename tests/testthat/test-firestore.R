@@ -97,6 +97,14 @@ test_that("Test Firestore list documents", {
   expect_null(response$error)
 })
 
+# test batch get
+
+test_that("Test Firestore batch get documents", {
+  response <- batchGetDocuments(projectID, c("projects/gsoc2018-d05d8/databases/(default)/documents/test/test", "projects/gsoc2018-d05d8/databases/(default)/documents/test/test2"))
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+})
+
 # test patch
 
 test_that("Test Firestore patch documents", {
@@ -138,3 +146,51 @@ test_that("Test Firestore patch documents", {
   expect_null(response$error)
 })
 
+# following methods requires OAuth token
+
+TOKEN <- "ya29.GlsIBsYTRTEIO0yk5dOL-O8Kc_iLcugOZlkbd4TPtPQQ6257w85EqWh1yldiHSb3OHD3wD71CgoVGsgPb595-LkDPj2uwt1L-EWuVEFpyTexQIzG0Bfd-kR735Kq"
+
+# Test list collection IDs
+
+test_that("Test Firestore listCollectionIDs", {
+  response <- listCollectionIds(projectID, "test/test", 1, token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+})
+
+# test begin transactions
+
+test_that("Test Firestore begin transaction and rollback", {
+  response <- createDocument(projectID, "test", documentName = "test_tran")
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+
+  options <- paste0('{"options":{"readOnly":{"readTime":"', response$updateTime, '"}}}')
+  response <- beginTransaction(projectID, options, token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+
+  response <- deleteDocument(projectID, "test/test_tran")
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+})
+
+test_that("Test Firestore commit", {
+  response <- createDocument(projectID, "test", documentName = "test_commit")
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+
+  options <- '{"writes":[{"delete":"projects/gsoc2018-d05d8/databases/(default)/documents/test/test_commit"}]}'
+  response <- commit(projectID, options, token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+
+  response <- deleteDocument(projectID, "test/test_commit")
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+})
+
+# test rollback
+# response <- rollback(projectID, response$transaction, token = TOKEN)
+# response <- httr::content(response, "parsed")
+# expect_null(response$error)
