@@ -511,11 +511,11 @@ listCollectionIds <- function(projectID, documentPath, pageSize, databaseID = "(
     documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
   }
   URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", documentPath, ":listCollectionIds")
-  request_body <- paste0("{pageSize: ", pageSize)
+  request_body <- paste0('{"pageSize": ', pageSize)
   if(pageToken == "none"){
     request_body <- paste0(request_body, "}")
   } else {
-    request_body <- paste0(request_body, ", pageToken: ", pageToken, "}")
+    request_body <- paste0(request_body, ', "pageToken": "', pageToken, '"}')
   }
   if (token == "none") {
     Response <- httr::POST(url = URL, body = request_body)

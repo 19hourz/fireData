@@ -76,7 +76,8 @@ test_that("Test Firestore creating document and get functionality with array", {
   response <- createDocument(projectID, "test/",a, documentName = "test_array", token = TOKEN)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
-  response <- getDocument(projectID, "test/test_array")
+  getDocument(projectID, "test/test_array/", decode = FALSE)
+  response <- getDocument(projectID, "test/test_array/", token = TOKEN)
   if(is.array(response)){
     if(all(a - response <= 1e-5)){
       succeed("Create and get produce same output")
@@ -87,7 +88,7 @@ test_that("Test Firestore creating document and get functionality with array", {
     fail("the returned response is not of type array")
     print(response)
   }
-  response <- deleteDocument(projectID, "test/test_array")
+  response <- deleteDocument(projectID, "test/test_array", token = TOKEN)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
 })
@@ -95,7 +96,15 @@ test_that("Test Firestore creating document and get functionality with array", {
 # test list
 
 test_that("Test Firestore list documents", {
-  response <- listDocuments(projectID, "test", 1)
+  response <- listDocuments(projectID, "test", 1, token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+
+  response <- listDocuments(projectID, "test/", 1, pageToken = response$nextPageToken)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+
+  response <- listDocuments(projectID, "cities", 2, orderBy = "name", showMissing = TRUE, token = TOKEN)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
 })
@@ -103,6 +112,10 @@ test_that("Test Firestore list documents", {
 # test batch get
 
 test_that("Test Firestore batch get documents", {
+  response <- batchGetDocuments(projectID, c("projects/gsoc2018-d05d8/databases/(default)/documents/test/test", "projects/gsoc2018-d05d8/databases/(default)/documents/test/test2"), token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+
   response <- batchGetDocuments(projectID, c("projects/gsoc2018-d05d8/databases/(default)/documents/test/test", "projects/gsoc2018-d05d8/databases/(default)/documents/test/test2"))
   response <- httr::content(response, "parsed")
   expect_null(response$error)
@@ -128,7 +141,8 @@ test_that("Test Firestore patch documents", {
   }
 
   df <- data.frame(matrix(rnorm(20), nrow=10))
-  response <- patchDocument(projectID, "test/test_patch", df)
+  patchDocument(projectID, "test/test_patch", df, token = TOKEN)
+  response <- patchDocument(projectID, "test/test_patch/", df)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
 
@@ -154,9 +168,16 @@ test_that("Test Firestore patch documents", {
 # Test list collection IDs
 
 test_that("Test Firestore listCollectionIDs", {
-  response <- listCollectionIds(projectID, "test/test", 1, token = TOKEN)
+  response <- listCollectionIds(projectID, "test/test/", 1, token = TOKEN)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
+
+  response <- listCollectionIds(projectID, "test/test/", 1, pageToken = response$nextPageToken, token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+
+  # only to cover tests
+  listCollectionIds(projectID, "test/test", 1)
 })
 
 # test begin transactions
@@ -174,6 +195,9 @@ test_that("Test Firestore begin transaction and rollback", {
   response <- deleteDocument(projectID, "test/test_tran")
   response <- httr::content(response, "parsed")
   expect_null(response$error)
+
+  # only to cover tests
+  beginTransaction(projectID, options)
 })
 
 test_that("Test Firestore commit", {
@@ -185,6 +209,9 @@ test_that("Test Firestore commit", {
   response <- commit(projectID, options, token = TOKEN)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
+
+  # only to cover tests
+  commit(projectID, options)
 })
 
 # test rollback
