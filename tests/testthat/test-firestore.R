@@ -4,7 +4,7 @@ library("fireData")
 projectID <- "gsoc2018-d05d8"
 
 #refresh the access token
-TOKEN <- "ya29.GlsIBsYTRTEIO0yk5dOL-O8Kc_iLcugOZlkbd4TPtPQQ6257w85EqWh1yldiHSb3OHD3wD71CgoVGsgPb595-LkDPj2uwt1L-EWuVEFpyTexQIzG0Bfd-kR735Kq"
+TOKEN <- "ya29.GlsJBhzRAXHfNU3NltrmqOIWb2j6neUiw_lDJSdfLpFewBJwzAtZa4uH4InZ8EdQrra0surajcnx3MEuzBmKISw6O2FXban1ii0I_FXj_zldjJBQL5FYOENJ17Kv"
 
 # Test create, get and delete
 
@@ -162,7 +162,7 @@ test_that("Test Firestore listCollectionIDs", {
 # test begin transactions
 
 test_that("Test Firestore begin transaction and rollback", {
-  response <- createDocument(projectID, "test", token = TOKEN)
+  response <- createDocument(projectID, "test", documentName = "test_tran")
   response <- httr::content(response, "parsed")
   expect_null(response$error)
 
@@ -177,16 +177,12 @@ test_that("Test Firestore begin transaction and rollback", {
 })
 
 test_that("Test Firestore commit", {
-  response <- createDocument(projectID, "test", documentName = "test_commit")
+  response <- createDocument(projectID, "test", token = TOKEN)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
 
   options <- '{"writes":[{"delete":"projects/gsoc2018-d05d8/databases/(default)/documents/test/test_commit"}]}'
   response <- commit(projectID, options, token = TOKEN)
-  response <- httr::content(response, "parsed")
-  expect_null(response$error)
-
-  response <- deleteDocument(projectID, "test/test_commit")
   response <- httr::content(response, "parsed")
   expect_null(response$error)
 })
