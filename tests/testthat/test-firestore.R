@@ -3,6 +3,9 @@ library("fireData")
 
 projectID <- "gsoc2018-d05d8"
 
+#refresh the access token
+TOKEN <- "ya29.GlsIBsYTRTEIO0yk5dOL-O8Kc_iLcugOZlkbd4TPtPQQ6257w85EqWh1yldiHSb3OHD3wD71CgoVGsgPb595-LkDPj2uwt1L-EWuVEFpyTexQIzG0Bfd-kR735Kq"
+
 # Test create, get and delete
 
 test_that("Test Firestore creating document and get functionality with a single data frame", {
@@ -70,7 +73,7 @@ test_that("Test Firestore creating document and get functionality with matrix", 
 
 test_that("Test Firestore creating document and get functionality with array", {
   a <- array(rnorm(20), dim=c(5,2,2))
-  response <- createDocument(projectID, "test",a, documentName = "test_array")
+  response <- createDocument(projectID, "test/",a, documentName = "test_array", token = TOKEN)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
   response <- getDocument(projectID, "test/test_array")
@@ -148,8 +151,6 @@ test_that("Test Firestore patch documents", {
 
 # following methods requires OAuth token
 
-TOKEN <- "ya29.GlsIBsYTRTEIO0yk5dOL-O8Kc_iLcugOZlkbd4TPtPQQ6257w85EqWh1yldiHSb3OHD3wD71CgoVGsgPb595-LkDPj2uwt1L-EWuVEFpyTexQIzG0Bfd-kR735Kq"
-
 # Test list collection IDs
 
 test_that("Test Firestore listCollectionIDs", {
@@ -161,7 +162,7 @@ test_that("Test Firestore listCollectionIDs", {
 # test begin transactions
 
 test_that("Test Firestore begin transaction and rollback", {
-  response <- createDocument(projectID, "test", documentName = "test_tran")
+  response <- createDocument(projectID, "test", token = TOKEN)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
 
