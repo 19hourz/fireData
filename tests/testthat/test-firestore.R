@@ -4,7 +4,7 @@ library("fireData")
 projectID <- "gsoc2018-d05d8"
 
 #refresh the access token
-TOKEN <- "ya29.GlsJBiqdHPeQiLYVUil6S1GB2WjOG-v-OS-zoPZDoN_YCnfhNMcYyVuO1iysRKhYcQt-zWBlHctl1TUVpL61xKvVfVxdzDypHrCZ7L7kGbVnGS3gxvdUvbDhrDFd"
+TOKEN <- "ya29.GlsJBqhbHOCvz3fdqK-RDbQ0SHCa8BgaMPIhba3y6uJagnLSXZJqr84y1C1MhEeKMkq5hgPnqJK1G4QYJZeV_9uFTorvqHGnHBXH_MIWBZDsMIPJz7LzgX4OkDeh"
 
 # Test create, get and delete
 
@@ -104,7 +104,7 @@ test_that("Test Firestore list documents", {
   response <- httr::content(response, "parsed")
   expect_null(response$error)
 
-  response <- listDocuments(projectID, "cities", 2, orderBy = "name", showMissing = TRUE, token = TOKEN)
+  response <- listDocuments(projectID, "cities", 2, orderBy = "name", token = TOKEN)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
 })

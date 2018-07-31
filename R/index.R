@@ -316,26 +316,16 @@ getDocument <- function(projectID, documentPath, databaseID = "(default)", token
 #' @examples
 #' \dontrun{
 #' }
-listDocuments <- function(projectID, collectionPath, pageSize, databaseID = "(default)", pageToken = "none", orderBy = "none", showMissing = FALSE, token = "none") {
+listDocuments <- function(projectID, collectionPath, pageSize, databaseID = "(default)", pageToken = NULL, orderBy = NULL, showMissing = FALSE, token = "none") {
   if(substring(collectionPath, nchar(collectionPath), nchar(collectionPath)) == "/"){
     collectionPath <- substring(collectionPath, 0, nchar(collectionPath)-1)
   }
-  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", collectionPath, "?pageSize=", pageSize)
-  if(pageToken != "none"){
-    URL <- paste0(URL, "&pageToken=", pageToken)
-  }
-  if(orderBy != "none"){
-    URL <- paste0(URL, "&orderBy=", orderBy)
-  }
-  if(showMissing){
-    URL <- paste0(URL, "&showMissing=TRUE")
-  }
-
+  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", collectionPath)
   if (token == "none") {
-    Response <- httr::GET(url = URL)
+    Response <- httr::GET(url = URL, query = list(pageSize = pageSize, pageToken = pageToken, orderBy = orderBy, showMissing = showMissing))
   } else {
     token <- paste0("Bearer ", token)
-    Response <- httr::GET(url = URL, httr::add_headers(Authorization = token))
+    Response <- httr::GET(url = URL, httr::add_headers(Authorization = token), query = list(pageSize = pageSize, pageToken = pageToken, orderBy = orderBy, showMissing = showMissing))
   }
   return(Response)
 }
