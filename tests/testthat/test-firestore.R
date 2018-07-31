@@ -4,7 +4,7 @@ library("fireData")
 projectID <- "gsoc2018-d05d8"
 
 #refresh the access token
-TOKEN <- "ya29.GlsJBuiJwi7OUp-xB4gXYNTWcvp6zPt2pSeBFPROb5AfPg9FyB8-wOxbxZjguLhYLQ9mA-hkBpsMzkthEGAT6B9M0z4s5qaRj3DvjLxDx1ocDgq4UotovhvgF4Wj"
+TOKEN <- "ya29.GlsJBjTPqvy0GVNuSzk53BUs8eLzCYFJWrPbwWSfY8mStMJqcQOagMc54R8fF_bNtUeKcGW2t98-MyjWp9B0txvP0BREWYWquVggHRmKD3UaCRWMs-9XPkJ1zB83"
 
 # Test create, get and delete
 
@@ -223,33 +223,38 @@ test_that("Test Firestore commit", {
 
 test_that("Test Firestore index methods", {
   expect_error(indexField("country"))
-  i <- index("users", c(indexField("first","ASCENDING"),indexField("last","ASCENDING")))
+  i <- index("users", c(indexField("born","ASCENDING"),indexField("last","ASCENDING")))
   response <- createIndex(projectID, i, token = TOKEN)
   response <- httr::content(response, "parsed")
-  expect_null(response$error)
 
-  name <- response$metadata$index
-  patterns <- gregexpr('/', name)
-  pos <- patterns[[1]][length(patterns[[1]])]
-  indexid <- substring(name, pos + 1)
-  response <- getIndex(projectID, indexid, token = TOKEN)
-  response <- httr::content(response, "parsed")
-  expect_null(response$error)
+  if(is.null(response$error)){
+    name <- response$metadata$index
+    patterns <- gregexpr('/', name)
+    pos <- patterns[[1]][length(patterns[[1]])]
+    indexid <- substring(name, pos + 1)
+    response <- getIndex(projectID, indexid, token = TOKEN)
+    response <- httr::content(response, "parsed")
+    expect_null(response$error)
 
-  response <- listIndex(projectID, token = TOKEN)
-  response <- httr::content(response, "parsed")
-  expect_null(response$error)
+    response <- listIndex(projectID, token = TOKEN)
+    response <- httr::content(response, "parsed")
+    expect_null(response$error)
 
-  query <- list()
-  query$from$collectionId = "users"
-  query$from$allDescendants = "TRUE"
-  response <- runQuery(projectID, query, token = TOKEN)
-  response <- httr::content(response, "parsed")
-  expect_null(response$error)
+    query <- list()
+    query$from$collectionId = "users"
+    query$from$allDescendants = "TRUE"
+    response <- runQuery(projectID, query, token = TOKEN)
+    response <- httr::content(response, "parsed")
+    expect_null(response$error)
 
-  response <- deleteIndex(projectID, indexid, token = TOKEN)
-  response <- httr::content(response, "parsed")
-  expect_null(response$error)
+    response <- deleteIndex(projectID, indexid, token = TOKEN)
+    response <- httr::content(response, "parsed")
+    expect_null(response$error)
+  } else if (response$error$status == "ALREADY_EXISTS"){
+    print("The index is not yet deleted from the database")
+  } else {
+    fail("There is error other than 'ALREADY_EXISTS'")
+  }
 
   # only to cover tests
   createIndex(projectID, i)
