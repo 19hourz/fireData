@@ -4,7 +4,7 @@ library("fireData")
 projectID <- "gsoc2018-d05d8"
 
 #refresh the access token
-TOKEN <- "ya29.GlsJBqhbHOCvz3fdqK-RDbQ0SHCa8BgaMPIhba3y6uJagnLSXZJqr84y1C1MhEeKMkq5hgPnqJK1G4QYJZeV_9uFTorvqHGnHBXH_MIWBZDsMIPJz7LzgX4OkDeh"
+TOKEN <- "ya29.GlsJBuiJwi7OUp-xB4gXYNTWcvp6zPt2pSeBFPROb5AfPg9FyB8-wOxbxZjguLhYLQ9mA-hkBpsMzkthEGAT6B9M0z4s5qaRj3DvjLxDx1ocDgq4UotovhvgF4Wj"
 
 # Test create, get and delete
 
