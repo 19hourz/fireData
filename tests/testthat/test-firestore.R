@@ -4,7 +4,7 @@ library("fireData")
 projectID <- "gsoc2018-d05d8"
 
 #refresh the access token
-TOKEN <- "ya29.GlsJBr8nqbPGh1R0yKMJXZnb6wdB6lYaLzhxfk9Xs7Dvh4CNH1obFbS_HMlvOORJMvtMKfnKYpYzQgkY0_gUJ22IaVD6EqYqiviNcUduCXJ5Nxlvb0Qinrt2EWZt"
+TOKEN <- "ya29.GlsJBiqdHPeQiLYVUil6S1GB2WjOG-v-OS-zoPZDoN_YCnfhNMcYyVuO1iysRKhYcQt-zWBlHctl1TUVpL61xKvVfVxdzDypHrCZ7L7kGbVnGS3gxvdUvbDhrDFd"
 
 # Test create, get and delete
 
@@ -96,11 +96,11 @@ test_that("Test Firestore creating document and get functionality with array", {
 # test list
 
 test_that("Test Firestore list documents", {
-  response <- listDocuments(projectID, "test", 1, token = TOKEN)
+  response <- listDocuments(projectID, "test", 1)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
 
-  response <- listDocuments(projectID, "test/", 1, pageToken = response$nextPageToken)
+  response <- listDocuments(projectID, "test/", 1, pageToken = response$nextPageToken, token = TOKEN)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
 
