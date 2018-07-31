@@ -250,15 +250,15 @@ test_that("Test Firestore index methods", {
     response <- deleteIndex(projectID, indexid, token = TOKEN)
     response <- httr::content(response, "parsed")
     expect_null(response$error)
+
+    # only to cover tests
+    createIndex(projectID, i)
+    getIndex(projectID, indexid)
+    listIndex(projectID)
+    deleteIndex(projectID, indexid)
   } else if (response$error$status == "ALREADY_EXISTS"){
     print("The index is not yet deleted from the database")
   } else {
     fail("There is error other than 'ALREADY_EXISTS'")
   }
-
-  # only to cover tests
-  createIndex(projectID, i)
-  getIndex(projectID, indexid)
-  listIndex(projectID)
-  deleteIndex(projectID, indexid)
 })
