@@ -4,7 +4,7 @@ library("fireData")
 projectID <- "gsoc2018-d05d8"
 
 #refresh the access token
-TOKEN <- "ya29.GlsJBhzRAXHfNU3NltrmqOIWb2j6neUiw_lDJSdfLpFewBJwzAtZa4uH4InZ8EdQrra0surajcnx3MEuzBmKISw6O2FXban1ii0I_FXj_zldjJBQL5FYOENJ17Kv"
+TOKEN <- "ya29.GlsJBr8nqbPGh1R0yKMJXZnb6wdB6lYaLzhxfk9Xs7Dvh4CNH1obFbS_HMlvOORJMvtMKfnKYpYzQgkY0_gUJ22IaVD6EqYqiviNcUduCXJ5Nxlvb0Qinrt2EWZt"
 
 # Test create, get and delete
 
@@ -218,3 +218,42 @@ test_that("Test Firestore commit", {
 # response <- rollback(projectID, response$transaction, token = TOKEN)
 # response <- httr::content(response, "parsed")
 # expect_null(response$error)
+
+# Query and index tests
+
+test_that("Test Firestore index methods", {
+  expect_error(indexField("country"))
+  i <- index("users", c(indexField("first","ASCENDING"),indexField("last","ASCENDING")))
+  response <- createIndex(projectID, i, token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+
+  name <- response$metadata$index
+  patterns <- gregexpr('/', name)
+  pos <- patterns[[1]][length(patterns[[1]])]
+  indexid <- substring(name, pos + 1)
+  response <- getIndex(projectID, indexid, token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+
+  response <- listIndex(projectID, token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+
+  query <- list()
+  query$from$collectionId = "users"
+  query$from$allDescendants = "TRUE"
+  response <- runQuery(projectID, query, token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+
+  response <- deleteIndex(projectID, indexid, token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+
+  # only to cover tests
+  createIndex(projectID, i)
+  getIndex(projectID, indexid)
+  listIndex(projectID)
+  deleteIndex(projectID, indexid)
+})
