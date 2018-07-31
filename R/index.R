@@ -213,7 +213,7 @@ path_check <- function(path){
 #' \dontrun{
 #' }
 createDocument <- function(projectID, documentPath, document = "none", documentName = "none", databaseID = "(default)", token = "none") {
-  if(document != "none"){
+  if(length(document) > 1 || document != "none"){
     document <- generateDocument(document)
   }
   if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
@@ -397,7 +397,7 @@ batchGetDocuments <- function(projectID, documents, databaseID = "(default)", ma
 #' \dontrun{
 #' }
 patchDocument <- function(projectID, documentPath, document, databaseID = "(default)", token = "none") {
-  document <- generateDocument(document, name = paste0(projects, projectID, "/", databaseID, "/", documents, documentPath))
+  document <- generateDocument(document, name = paste0("projects/", projectID, "/", databaseID, "/documents", documentPath))
   if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
     documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
   }

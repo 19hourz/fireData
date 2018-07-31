@@ -125,7 +125,7 @@ test_that("Test Firestore batch get documents", {
 
 test_that("Test Firestore patch documents", {
   df <- data.frame(matrix(rnorm(20), nrow=10))
-  response <- createDocument(projectID, "test",df, documentName = "test_patch")
+  response <- createDocument(projectID, "test", document = df, documentName = "test_patch")
   response <- httr::content(response, "parsed")
   expect_null(response$error)
   response <- getDocument(projectID, "test/test_patch")
