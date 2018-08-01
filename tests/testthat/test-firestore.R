@@ -4,12 +4,19 @@ library("fireData")
 projectID <- "gsoc2018-d05d8"
 
 #refresh the access token
-TOKEN <- "ya29.GlsKBoAQ8mxnUwOOVOW8ac9nDDzZ6LiL0QJSL6h8Z6ZT1xzT_DdVnd8dbzryIzKE73R7Agj2OZTHbwKeqZBV5vUZvNE-r_SDon7RDRWmEc5OnaxSQ_kSLfIATrlp"
+TOKEN <- "ya29.GlsKBqRETXjv67aq5NPjEHTgr7LSURKw7jJXlws1XaUlyWhwxWOCZWbgnqbtu8f7UqNDggqN2kZD4tA9O9fUZMwcmmqtK9-VuD_ufYibYqV4HWCHSInbCYqELcMv"
 
 # Test encode and decode
 
 test_that("Test encode and decode", {
+  # single values
   encode(NULL)
+  encode(TRUE)
+  encode(1.0)
+  encode("test")
+  encode(1)
+  recursive_encode(NULL)
+  recursive_decode(NULL)
 
   l <- list()
   l$logical <- TRUE
