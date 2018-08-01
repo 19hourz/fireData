@@ -1,6 +1,6 @@
 library("testthat")
 library("fireData")
-
+library("stringi")
 projectID <- "gsoc2018-d05d8"
 
 #refresh the access token
@@ -245,8 +245,8 @@ test_that("Test Firestore commit", {
 test_that("Test Firestore index methods", {
   expect_error(indexField("country"))
   # use random string to avoid the long waiting time between creating and deleting same index
-  first_index <- stringi::stri_rand_strings(1,5,'[A-Z]')
-  second_index <- stringi::stri_rand_strings(1,5,'[A-Z]')
+  first_index <- stri_rand_strings(1,5,'[A-Z]')
+  second_index <- stri_rand_strings(1,5,'[A-Z]')
   i <- index("users", c(indexField(first_index,"ASCENDING"),indexField(second_index,"ASCENDING")))
   response <- createIndex(projectID, i, token = TOKEN)
   response <- httr::content(response, "parsed")
