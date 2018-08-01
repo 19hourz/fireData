@@ -848,16 +848,20 @@ recursive_encode <- function(value){
 #' @author Jiasheng Zhu
 #' @description Convert string which conforms to Firestore document format to R variable
 #' @param response HTTP response including a Firestore document
+#' @param parse whether to parse the response first, default is true
 #' @return R variable
 #' @export
 #' @examples
 #' \dontrun{
 #' }
-decode <- function(response){
-  parsed_response <- httr::content(response, "parsed")
+decode <- function(response, parse = TRUE){
+  if(parse){
+    parsed_response <- httr::content(response, "parsed")
+  } else {
+    parsed_response <- response
+  }
   if(is.null(parsed_response$fields)){
     stop("Invalid response: could not find fields")
-    return(response)
   } else {
     if(names(parsed_response$fields) == "array"){
       data <- recursive_decode(parsed_response$fields[["array"]]$mapValue$fields$data)
