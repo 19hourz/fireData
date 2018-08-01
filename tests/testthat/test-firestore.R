@@ -15,8 +15,26 @@ test_that("Test encode and decode", {
   encode(1.0)
   encode("test")
   encode(1)
+
+  setClass("Test", representation(name = "character", code = "numeric"))
+  test <- new("Test", name = "test_invalid_type", code = 1)
+  expect_error(encode(test))
+  expect_error(recursive_encode(test))
   recursive_encode(NULL)
-  recursive_decode(NULL)
+
+  response <- getDocument(projectID, "test/test_invalid", decode = FALSE)
+  expect_error(recursive_decode(response))
+  expect_error(decode(response))
+
+  response <- list()
+  response$nullValue <- ""
+  #should be null
+  recursive_decode(response)
+
+  response <- list()
+  response$invalidValue <- "invalid"
+  #should be null
+  recursive_decode(response)
 
   l <- list()
   l$logical <- TRUE

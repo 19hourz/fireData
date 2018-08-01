@@ -774,7 +774,7 @@ encode <- function(value){
   if(is.logical(value))
     return(paste0('{"fireData" : { "booleanValue": "', value, '" }}'))
 
-  if(is.integer(value))
+  if(is.numeric(value) && round(value) - value == 0)
     return(paste0('{"fireData" : { "integerValue": "', value, '" }}'))
 
   if(is.double(value))
@@ -825,7 +825,7 @@ recursive_encode <- function(value){
   if(is.logical(value))
     return(paste0('{ "booleanValue": "', value, '" }'))
 
-  if(is.integer(value))
+  if(is.numeric(value) && round(value) - value == 0)
     return(paste0('{ "integerValue": "', value, '" }'))
 
   if(is.double(value))
