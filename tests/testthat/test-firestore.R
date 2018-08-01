@@ -1,10 +1,10 @@
 library("testthat")
 library("fireData")
-library("stringi")
+
 projectID <- "gsoc2018-d05d8"
 
 #refresh the access token
-TOKEN <- "ya29.GlsKBqiwfmh7c1Y0SLkSMBBXc01jgiVK-dkrbxWAf43_5wjvU8wDQan2gFZQ-7_WRjI39VZZTaaI7w70GGoJfLaASaioU8OkkXWqwgdmreW5kwTIOrlE8gVW7aII"
+TOKEN <- "ya29.GlsKBoAQ8mxnUwOOVOW8ac9nDDzZ6LiL0QJSL6h8Z6ZT1xzT_DdVnd8dbzryIzKE73R7Agj2OZTHbwKeqZBV5vUZvNE-r_SDon7RDRWmEc5OnaxSQ_kSLfIATrlp"
 
 # Test encode and decode
 
@@ -245,8 +245,8 @@ test_that("Test Firestore commit", {
 test_that("Test Firestore index methods", {
   expect_error(indexField("country"))
   # use random string to avoid the long waiting time between creating and deleting same index
-  first_index <- stri_rand_strings(1,5,'[A-Z]')
-  second_index <- stri_rand_strings(1,5,'[A-Z]')
+  first_index <- paste(sample(LETTERS, 5),collapse = "")
+  second_index <- paste(sample(LETTERS, 5),collapse = "")
   i <- index("users", c(indexField(first_index,"ASCENDING"),indexField(second_index,"ASCENDING")))
   response <- createIndex(projectID, i, token = TOKEN)
   response <- httr::content(response, "parsed")
