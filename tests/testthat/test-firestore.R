@@ -4,7 +4,7 @@ library("fireData")
 projectID <- "gsoc2018-d05d8"
 
 #refresh the access token
-TOKEN <- "ya29.GlsKBqRETXjv67aq5NPjEHTgr7LSURKw7jJXlws1XaUlyWhwxWOCZWbgnqbtu8f7UqNDggqN2kZD4tA9O9fUZMwcmmqtK9-VuD_ufYibYqV4HWCHSInbCYqELcMv"
+TOKEN <- "ya29.GlsKBrSIUyMJLz-pp3lEhzhKsSXfNlT_rlV7K12K0sp0APr7kX_Am1KB3_Qa04YYhH2UIJLwBDbqdqXJ9plNOiB6e389ekxt5tF-eU0Goz9g_44WrEf5vrqqRfqf"
 
 # Test encode and decode
 
@@ -34,7 +34,7 @@ test_that("Test encode and decode", {
   response <- list()
   response$invalidValue <- "invalid"
   #should be null
-  recursive_decode(response)
+  expect_error(recursive_decode(response))
 
   l <- list()
   l$logical <- TRUE
