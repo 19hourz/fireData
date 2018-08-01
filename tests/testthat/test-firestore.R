@@ -4,7 +4,33 @@ library("fireData")
 projectID <- "gsoc2018-d05d8"
 
 #refresh the access token
-TOKEN <- "ya29.GlsJBjTPqvy0GVNuSzk53BUs8eLzCYFJWrPbwWSfY8mStMJqcQOagMc54R8fF_bNtUeKcGW2t98-MyjWp9B0txvP0BREWYWquVggHRmKD3UaCRWMs-9XPkJ1zB83"
+TOKEN <- "ya29.GlsKBqiwfmh7c1Y0SLkSMBBXc01jgiVK-dkrbxWAf43_5wjvU8wDQan2gFZQ-7_WRjI39VZZTaaI7w70GGoJfLaASaioU8OkkXWqwgdmreW5kwTIOrlE8gVW7aII"
+
+# Test encode and decode
+
+test_that("Test encode and decode", {
+  encode(NULL)
+
+  l <- list()
+  l$logical <- TRUE
+  l$int <- 1
+  l$double <- 1.1
+  l$str <- "test"
+  ll <- list()
+  ll$logical <- FALSE
+  ll$int <- 2
+  ll$double <- 2.2
+  ll$str <- "test2"
+  ll$list <- l
+
+  l_encoded <- encode(ll)
+  expect_error(decode(l_encoded))
+  response <- createDocument(projectID, "test",ll, documentName = "test_code")
+  deleteDocument(projectID, "test/test_code")
+  l_decode <- decode(response)
+  #TODO test two list disregarding order
+
+})
 
 # Test create, get and delete
 
@@ -214,51 +240,59 @@ test_that("Test Firestore commit", {
   commit(projectID, options)
 })
 
-# test rollback
-# response <- rollback(projectID, response$transaction, token = TOKEN)
-# response <- httr::content(response, "parsed")
-# expect_null(response$error)
-
 # Query and index tests
 
 test_that("Test Firestore index methods", {
   expect_error(indexField("country"))
-  i <- index("users", c(indexField("born","ASCENDING"),indexField("last","ASCENDING")))
+  # use random string to avoid the long waiting time between creating and deleting same index
+  first_index <- stringi::stri_rand_strings(1,5,'[A-Z]')
+  second_index <- stringi::stri_rand_strings(1,5,'[A-Z]')
+  i <- index("users", c(indexField(first_index,"ASCENDING"),indexField(second_index,"ASCENDING")))
   response <- createIndex(projectID, i, token = TOKEN)
   response <- httr::content(response, "parsed")
+  expect_null(response$error)
 
-  if(is.null(response$error)){
-    name <- response$metadata$index
-    patterns <- gregexpr('/', name)
-    pos <- patterns[[1]][length(patterns[[1]])]
-    indexid <- substring(name, pos + 1)
-    response <- getIndex(projectID, indexid, token = TOKEN)
-    response <- httr::content(response, "parsed")
-    expect_null(response$error)
+  name <- response$metadata$index
+  patterns <- gregexpr('/', name)
+  pos <- patterns[[1]][length(patterns[[1]])]
+  indexid <- substring(name, pos + 1)
+  response <- getIndex(projectID, indexid, token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
 
-    response <- listIndex(projectID, token = TOKEN)
-    response <- httr::content(response, "parsed")
-    expect_null(response$error)
+  response <- listIndex(projectID, token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
 
-    query <- list()
-    query$from$collectionId = "users"
-    query$from$allDescendants = "TRUE"
-    response <- runQuery(projectID, query, token = TOKEN)
-    response <- httr::content(response, "parsed")
-    expect_null(response$error)
+  query <- list()
+  query$from$collectionId = "users"
+  query$from$allDescendants = "TRUE"
+  response <- runQuery(projectID, query, token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
 
-    response <- deleteIndex(projectID, indexid, token = TOKEN)
-    response <- httr::content(response, "parsed")
-    expect_null(response$error)
+  response <- runQuery(projectID, query, documentPath = "users/alovelace", token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
 
-    # only to cover tests
-    createIndex(projectID, i)
-    getIndex(projectID, indexid)
-    listIndex(projectID)
-    deleteIndex(projectID, indexid)
-  } else if (response$error$status == "ALREADY_EXISTS"){
-    print("The index is not yet deleted from the database")
-  } else {
-    fail("There is error other than 'ALREADY_EXISTS'")
-  }
+  response <- deleteIndex(projectID, indexid, token = TOKEN)
+  response <- httr::content(response, "parsed")
+  expect_null(response$error)
+
+  # only to cover tests
+  createIndex(projectID, i)
+  getIndex(projectID, indexid)
+  runQuery(projectID, query)
+  listIndex(projectID)
+  deleteIndex(projectID, indexid)
+})
+
+# tests that are hard to cover now
+# test rollback
+# response <- rollback(projectID, response$transaction, token = TOKEN)
+# response <- httr::content(response, "parsed")
+# expect_null(response$error)
+test_that("Test Firestore rollback", {
+  response <- rollback(projectID, "none", token = TOKEN)
+  response <- rollback(projectID, "none")
 })

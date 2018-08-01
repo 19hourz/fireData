@@ -348,22 +348,19 @@ listDocuments <- function(projectID, collectionPath, pageSize, databaseID = "(de
 #' @examples
 #' \dontrun{
 #' }
-batchGetDocuments <- function(projectID, documents, databaseID = "(default)", mask = "none", transaction = "none", newTransaction = "none", readTime = "none", token = "none"){
+batchGetDocuments <- function(projectID, documents, databaseID = "(default)", mask = NULL, transaction = NULL, newTransaction = NULL, readTime = NULL, token = "none"){
   URL = paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents:batchGet")
   request <- list()
   request$documents <- documents
-  if(mask != "none"){
-    request$mask <- mask
-  }
-  if(transaction != "none"){
-    request$transaction <- transaction
-  }
-  if(newTransaction != "none"){
-    request$newTransaction <- newTransaction
-  }
-  if(readTime != "none"){
-    request$readTime <- readTime
-  }
+
+  request$mask <- mask
+
+  request$transaction <- transaction
+
+  request$newTransaction <- newTransaction
+
+  request$readTime <- readTime
+
   if (token == "none") {
     Response <- httr::POST(url = URL, body = jsonlite::toJSON(request, auto_unbox = TRUE))
   } else {
@@ -535,7 +532,7 @@ listCollectionIds <- function(projectID, documentPath, pageSize, databaseID = "(
 #' @examples
 #' \dontrun{
 #' }
-runQuery <- function(projectID, query, documentPath = "none", databaseID = "(default)", transaction = "none", newTransaction = "none", readTime = "none", token = "none"){
+runQuery <- function(projectID, query, documentPath = "none", databaseID = "(default)", transaction = NULL, newTransaction = NULL, readTime = NULL, token = "none"){
   URL = paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents")
   if(documentPath == "none"){
     URL = paste0(URL, ":runQuery")
@@ -543,16 +540,15 @@ runQuery <- function(projectID, query, documentPath = "none", databaseID = "(def
     URL = paste0(URL, "/", documentPath, ":runQuery")
   }
   request <- list()
+
   request$structuredQuery <- query
-  if(transaction != "none"){
-    request$transaction <- transaction
-  }
-  if(newTransaction != "none"){
-    request$newTransaction <- newTransaction
-  }
-  if(readTime != "none"){
-    request$readTime <- readTime
-  }
+
+  request$transaction <- transaction
+
+  request$newTransaction <- newTransaction
+
+  request$readTime <- readTime
+
   if (token == "none") {
     Response <- httr::POST(url = URL, body = jsonlite::toJSON(request, auto_unbox = TRUE))
   } else {
@@ -561,6 +557,7 @@ runQuery <- function(projectID, query, documentPath = "none", databaseID = "(def
   }
   return(Response)
 }
+
 
 #' Index methods
 
@@ -737,7 +734,7 @@ generateDocument <- function(data, name = "none") {
 #' }
 encode <- function(value){
   #vector
-  if(is.vector(value) && length(value) > 1){
+  if(!is.list(value) && is.vector(value) && length(value) > 1){
     str <- ''
     for(element in value){
       str <- paste0(str, recursive_encode(element), ",")
@@ -783,10 +780,6 @@ encode <- function(value){
   if(is.double(value))
     return(paste0('{"fireData" : { "doubleValue": "', value, '" }}'))
 
-  #TODO check this type's correctness
-  if(is.numeric.Date(value))
-    return(paste0('{"fireData" : { "timestampValue": "', value, '" }}'))
-
   if(is.character(value))
     return(paste0('{"fireData" : { "stringValue": "', value, '" }}'))
 
@@ -810,7 +803,7 @@ encode <- function(value){
 #' \dontrun{
 #' }
 recursive_encode <- function(value){
-  if(is.vector(value) && length(value) > 1){
+  if(!is.list(value) && is.vector(value) && length(value) > 1){
     str <- ''
     for(element in value){
       str <- paste0(str, recursive_encode(element), ",")
@@ -837,10 +830,6 @@ recursive_encode <- function(value){
 
   if(is.double(value))
     return(paste0('{ "doubleValue": "', value, '" }'))
-
-  #TODO check this type's correctness
-  if(is.numeric.Date(value))
-    return(paste0('{ "timestampValue": "', value, '" }'))
 
   if(is.character(value))
     return(paste0('{ "stringValue": "', value, '" }'))
@@ -928,10 +917,6 @@ recursive_decode <- function(fields){
 
     else if(names(fields) == "booleanValue"){
       return(fields$booleanValue)
-    }
-
-    else if(names(fields) == "timestampValue"){
-      return(fields$timestampValue)
     }
 
     else if(names(fields) == "stringValue"){
