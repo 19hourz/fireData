@@ -18,7 +18,7 @@ This project is part of Firedata that adds support for Google Cloud Firestore. M
 
 **R Package Setup:**
 
-```
+```R
 if (!require("devtools")) install.packages("devtools")
 devtools::install_github("19hourz/fireData")
 
@@ -28,22 +28,22 @@ library(fireData)
 ## Examples
 
 * Create a document using data frame with path (default)/mydata/mydocument
-```
+```R
 df <- data.frame(matrix(rnorm(20), nrow=10))
 response <- createDocument(projectID, "mydata", df, documentName = "mydocument")
 ```
 
 * Get a document with path (default)/mydata/mydocument, the returned response will be the data frame created previously
-```
+```R
 response <- getDocument(projectID, "mydata/mydocument")
 ```
 * To returned the original response:
-```
+```R
 response <- getDocument(projectID, "mydata/mydocument", decode = FALSE)
 ```
 
 * Use encode to convert an R variable to firestore document and use decode to convert a http response that contains a document back to R variable. To decode a parsed http response, use option **parse = FALSE**. A specific example is shown below:
-```
+```R
 # batch getting two documents
 response <- batchGetDocuments(projectID, c("projects/gsoc2018-d05d8/databases/(default)/documents/mydata/mydocument1", "projects/gsoc2018-d05d8/databases/(default)/documents/mydata/mydocument2"))
 
