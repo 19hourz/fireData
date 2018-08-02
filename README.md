@@ -7,6 +7,20 @@
 
 This project is part of Firedata that adds support for Google Cloud Firestore. Methods are implemented through Google Firestore REST API. Before using, please set up Firebase accordingly. Certain functions requires using OAuth 2.0 access token. To gain the access token, credentials of the project will be needed and can be found from [here](https://console.developers.google.com/apis/credentials). Firestore brought additional features upon realtime database such as querying.
 
+### Things covered in this project:
+
+* All REST endpoints are implemented in corresponding R functions with similar names.
+* Unit testing for every function, codecov 100% for lines added in this project.
+* Native R encode and decode functions that transfer between R variables (data.frame, vector, array and other primitive types) and Firestore documents.
+* OAuth 2.0 function that added scopes for cloud-platform and datastore, necessary for some firestore functions.
+
+### Things to be done in the future
+
+* A more integrated query generation function. Since querying is an important feature of Firestore, this feature needs to be better implemented.
+* Make decoding and encoding integratable with other languages, i.e, share data across different languages.
+* At the time of this project, the write function is not yet implemented
+* google_datastore auth function sometimes fails, thus not included in index.r, use https://developers.google.com/oauthplayground/ to acquire OAuth 2.0 token for firestore
+
 ## Setup
 
 **Firestore Setup:**
@@ -40,6 +54,12 @@ response <- getDocument(projectID, "mydata/mydocument")
 * To returned the original response:
 ```R
 response <- getDocument(projectID, "mydata/mydocument", decode = FALSE)
+```
+
+* Update for an existing document:
+```R
+df <- data.frame(matrix(rnorm(20), nrow=10))
+patchDocument(projectID, "mydata/mydocument", df)
 ```
 
 * Use encode to convert an R variable to firestore document and use decode to convert a http response that contains a document back to R variable. To decode a parsed http response, use option **parse = FALSE**. A specific example is shown below:
