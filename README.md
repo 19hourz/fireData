@@ -64,7 +64,6 @@ patchDocument(projectID, "mydata/mydocument", df)
 ```
 
 * Use encode to convert an R variable to firestore document and use decode to convert a http response that contains a document back to R variable. To decode a parsed http response, use option **parse = FALSE**. A specific example is shown below:
-
 ```R
 createDocument(projectID, "mydata", df, documentName = "anotherdocument")
 
@@ -85,4 +84,11 @@ deleteDocument(projectID, "mydata/anotherdocument")
 * To list all documents under a collectionID,
 ```R
 listDocuments(projectID, "mydata", 10)
+```
+
+### Other functions may require an OAuth 2.0 token, you can acquire that temporarily from here https://developers.google.com/oauthplayground/ (only works for certain security rules)
+
+* List all collection ids (use "" to list root level collection ids):
+```R
+listCollectionIds(projectID, "", 1, token = TOKEN)
 ```
