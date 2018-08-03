@@ -3,7 +3,8 @@ library("fireData")
 
 projectID <- "gsoc2018-d05d8"
 
-#refresh the access token
+# refresh the access token
+# token used for testing are generated from https://developers.google.com/oauthplayground/
 TOKEN <- "ya29.GlsMBisfuc7Uui2lJ4jK2sZTfW15fKRU10FmZJwUwK6JEECPJJ8ZffkXoCwynmW68D1EigPZYqSQTq8D_JLvnS0Y4Vs9vE2qRjxerRU3-Ea3Abk_X2v6UfylWPep"
 
 # Test encode and decode

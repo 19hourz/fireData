@@ -65,7 +65,7 @@ patchDocument(projectID, "mydata/mydocument", df)
 
 * Use encode to convert an R variable to firestore document and use decode to convert a http response that contains a document back to R variable. To decode a parsed http response, use option **parse = FALSE**. A specific example is shown below:
 
-batch getting two documents
+⋅⋅⋅batch getting two documents
 ```R
 createDocument(projectID, "mydata", df, documentName = "anotherdocument")
 
@@ -73,11 +73,11 @@ response <- batchGetDocuments(projectID, c("projects/gsoc2018-d05d8/databases/(d
 
 parsed_response <- httr::content(response, "parsed")
 ```
-get the varible contained in mydocument
+⋅⋅⋅get the varible contained in mydocument
 ```R
 decode(parsed_response[[1]]$found, FALSE)
 ```
-get the varible contained in anotherdocument
+⋅⋅⋅get the varible contained in anotherdocument
 ```R
 decode(parsed_response[[2]]$found, FALSE)
 ```
