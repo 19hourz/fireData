@@ -64,6 +64,7 @@ patchDocument(projectID, "mydata/mydocument", df)
 ```
 
 * Use encode to convert an R variable to firestore document and use decode to convert a http response that contains a document back to R variable. To decode a parsed http response, use option **parse = FALSE**. A specific example is shown below:
+
 ```R
 createDocument(projectID, "mydata", df, documentName = "anotherdocument")
 
