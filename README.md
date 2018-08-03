@@ -48,7 +48,6 @@ df <- data.frame(matrix(rnorm(20), nrow=10))
 response <- createDocument(projectID, "mydata", df, documentName = "mydocument")
 ```
 
-  
 * Get a document with path (default)/mydata/mydocument, the returned response will be the data frame created previously
 ```R
 response <- getDocument(projectID, "mydata/mydocument")
@@ -58,39 +57,30 @@ response <- getDocument(projectID, "mydata/mydocument")
 response <- getDocument(projectID, "mydata/mydocument", decode = FALSE)
 ```
 
-  
 * Update for an existing document:
 ```R
 df <- data.frame(matrix(rnorm(20), nrow=10))
 patchDocument(projectID, "mydata/mydocument", df)
 ```
 
-  
 * Use encode to convert an R variable to firestore document and use decode to convert a http response that contains a document back to R variable. To decode a parsed http response, use option **parse = FALSE**. A specific example is shown below:
-* batch getting two documents
 ```R
 createDocument(projectID, "mydata", df, documentName = "anotherdocument")
 
 response <- batchGetDocuments(projectID, c("projects/gsoc2018-d05d8/databases/(default)/documents/mydata/mydocument", "projects/gsoc2018-d05d8/databases/(default)/documents/mydata/anotherdocument"))
 
 parsed_response <- httr::content(response, "parsed")
-```
-* get the varible contained in mydocument
-```R
-decode(parsed_response[[1]]$found, FALSE)
-```
-* get the varible contained in anotherdocument
-```R
-decode(parsed_response[[2]]$found, FALSE)
+
+df1 <- decode(parsed_response[[1]]$found, FALSE)
+
+df2 <- decode(parsed_response[[2]]$found, FALSE)
 ```
 
-  
 * To delete a document, simply:
 ```R
 deleteDocument(projectID, "mydata/anotherdocument")
 ```
 
-  
 * To list all documents under a collectionID,
 ```R
 listDocuments(projectID, "mydata", 10)
