@@ -116,3 +116,8 @@ listIndex(projectID, token = TOKEN)
 ```R
 response <- deleteIndex(projectID, indexid, token = TOKEN)
 ```
+
+## Aknowledgements:
+
+I hereby want to thank my mentor Robin Kohze and peer Paul Spende for their support during this Google Summer of Code 2018 project.
+
