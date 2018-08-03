@@ -99,6 +99,7 @@ response <- createIndex(projectID, i, token = TOKEN)
 
 * Get index information using the response from cerateIndex
 ```R
+response <- httr::content(response, "parsed")
 name <- response$metadata$index
 patterns <- gregexpr('/', name)
 pos <- patterns[[1]][length(patterns[[1]])]
@@ -109,14 +110,6 @@ response <- getIndex(projectID, indexid, token = TOKEN)
 * List indexes in the project
 ```R
 listIndex(projectID, token = TOKEN)
-```R
-
-* Running simple select all queries
-```R
-query <- list()
-query$from$collectionId = "users"
-query$from$allDescendants = "TRUE"
-response <- runQuery(projectID, query, documentPath = "mydata/mydocument", token = TOKEN)
 ```
 
 * Delete an index
