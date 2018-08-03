@@ -66,13 +66,9 @@ patchDocument(projectID, "mydata/mydocument", df)
 * Use encode to convert an R variable to firestore document and use decode to convert a http response that contains a document back to R variable. To decode a parsed http response, use option parse = FALSE. A specific example is shown below
 ```R
 createDocument(projectID, "mydata", df, documentName = "anotherdocument")
-
 response <- batchGetDocuments(projectID, c("projects/gsoc2018-d05d8/databases/(default)/documents/mydata/mydocument", "projects/gsoc2018-d05d8/databases/(default)/documents/mydata/anotherdocument"))
-
 parsed_response <- httr::content(response, "parsed")
-
 df1 <- decode(parsed_response[[1]]$found, FALSE)
-
 df2 <- decode(parsed_response[[2]]$found, FALSE)
 ```
 
@@ -86,9 +82,44 @@ deleteDocument(projectID, "mydata/anotherdocument")
 listDocuments(projectID, "mydata", 10)
 ```
 
-** Other functions may require an OAuth 2.0 token, you can acquire that temporarily from [here](https://developers.google.com/oauthplayground/) (only works for certain security rules) **
+**Other functions may require an OAuth 2.0 token, you can acquire that temporarily from [here](https://developers.google.com/oauthplayground/) (only works for certain security rules)**
 
 * List all collection ids (use "" to list root level collection ids)
 ```R
 listCollectionIds(projectID, "", 1, token = TOKEN)
+```
+
+**Index related methods and queries**
+
+* Create index
+```R
+i <- index("users", c(indexField("X1","ASCENDING"),indexField("X2","ASCENDING")))
+response <- createIndex(projectID, i, token = TOKEN)
+```
+
+* Get index information using the response from cerateIndex
+```R
+name <- response$metadata$index
+patterns <- gregexpr('/', name)
+pos <- patterns[[1]][length(patterns[[1]])]
+indexid <- substring(name, pos + 1)
+response <- getIndex(projectID, indexid, token = TOKEN)
+```
+
+* List indexes in the project
+```R
+listIndex(projectID, token = TOKEN)
+```R
+
+* Running simple select all queries
+```R
+query <- list()
+query$from$collectionId = "users"
+query$from$allDescendants = "TRUE"
+response <- runQuery(projectID, query, documentPath = "mydata/mydocument", token = TOKEN)
+```
+
+* Delete an index
+```R
+response <- deleteIndex(projectID, indexid, token = TOKEN)
 ```
