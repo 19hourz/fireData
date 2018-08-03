@@ -7,7 +7,7 @@
 
 This project is part of Firedata that adds support for Google Cloud Firestore. Methods are implemented through Google Firestore REST API. Before using, please set up Firebase accordingly. Certain functions requires using OAuth 2.0 access token. To gain the access token, credentials of the project will be needed and can be found from [here](https://console.developers.google.com/apis/credentials). Firestore brought additional features upon realtime database such as querying.
 
-Check out the repo [here](https://github.com/19hourz/fireData)
+**Check out the repo** [here](https://github.com/19hourz/fireData)
 
 ### Things covered in this project:
 
@@ -52,18 +52,18 @@ response <- createDocument(projectID, "mydata", df, documentName = "mydocument")
 ```R
 response <- getDocument(projectID, "mydata/mydocument")
 ```
-* To returned the original response:
+* To returned the original response
 ```R
 response <- getDocument(projectID, "mydata/mydocument", decode = FALSE)
 ```
 
-* Update for an existing document:
+* Update for an existing document
 ```R
 df <- data.frame(matrix(rnorm(20), nrow=10))
 patchDocument(projectID, "mydata/mydocument", df)
 ```
 
-* Use encode to convert an R variable to firestore document and use decode to convert a http response that contains a document back to R variable. To decode a parsed http response, use option **parse = FALSE**. A specific example is shown below:
+* Use encode to convert an R variable to firestore document and use decode to convert a http response that contains a document back to R variable. To decode a parsed http response, use option parse = FALSE. A specific example is shown below
 ```R
 createDocument(projectID, "mydata", df, documentName = "anotherdocument")
 
@@ -76,19 +76,19 @@ df1 <- decode(parsed_response[[1]]$found, FALSE)
 df2 <- decode(parsed_response[[2]]$found, FALSE)
 ```
 
-* To delete a document, simply:
+* To delete a document
 ```R
 deleteDocument(projectID, "mydata/anotherdocument")
 ```
 
-* To list all documents under a collectionID,
+* To list all documents under a collectionID
 ```R
 listDocuments(projectID, "mydata", 10)
 ```
 
-### Other functions may require an OAuth 2.0 token, you can acquire that temporarily from here https://developers.google.com/oauthplayground/ (only works for certain security rules)
+** Other functions may require an OAuth 2.0 token, you can acquire that temporarily from [here](https://developers.google.com/oauthplayground/) (only works for certain security rules) **
 
-* List all collection ids (use "" to list root level collection ids):
+* List all collection ids (use "" to list root level collection ids)
 ```R
 listCollectionIds(projectID, "", 1, token = TOKEN)
 ```
