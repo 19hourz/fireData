@@ -4,7 +4,7 @@ library("fireData")
 projectID <- "gsoc2018-d05d8"
 
 #refresh the access token
-TOKEN <- "ya29.GlsLBtV1h0RhvQvo2_bH4dMPkdLhPtLlPajXAhaA0i0YHQzssqzVs-EPtSnni06iakZx8auyHUskBslqq8ED_8Kjq4AN39lVgxmIU-tvdItQOPRrOgCluStj9CJS"
+TOKEN <- "ya29.GlsMBisfuc7Uui2lJ4jK2sZTfW15fKRU10FmZJwUwK6JEECPJJ8ZffkXoCwynmW68D1EigPZYqSQTq8D_JLvnS0Y4Vs9vE2qRjxerRU3-Ea3Abk_X2v6UfylWPep"
 
 # Test encode and decode
 

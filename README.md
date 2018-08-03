@@ -7,19 +7,20 @@
 
 This project is part of Firedata that adds support for Google Cloud Firestore. Methods are implemented through Google Firestore REST API. Before using, please set up Firebase accordingly. Certain functions requires using OAuth 2.0 access token. To gain the access token, credentials of the project will be needed and can be found from [here](https://console.developers.google.com/apis/credentials). Firestore brought additional features upon realtime database such as querying.
 
+Check out the repo [here](https://github.com/19hourz/fireData)
+
 ### Things covered in this project:
 
 * All REST endpoints are implemented in corresponding R functions with similar names.
 * Unit testing for every function, codecov 100% for lines added in this project.
 * Native R encode and decode functions that transfer between R variables (data.frame, vector, array and other primitive types) and Firestore documents.
-* OAuth 2.0 function that added scopes for cloud-platform and datastore, necessary for some firestore functions.
 
 ### Things to be done in the future
 
 * A more integrated query generation function. Since querying is an important feature of Firestore, this feature needs to be better implemented.
 * Make decoding and encoding integratable with other languages, i.e, share data across different languages.
 * At the time of this project, the write function is not yet implemented
-* google_datastore auth function sometimes fails, thus not included in index.r, use https://developers.google.com/oauthplayground/ to acquire OAuth 2.0 token for firestore
+* OAuth 2.0 function that adds scopes for cloud-platform and datastore, necessary for some firestore functions.
 
 ## Setup
 
@@ -63,15 +64,30 @@ patchDocument(projectID, "mydata/mydocument", df)
 ```
 
 * Use encode to convert an R variable to firestore document and use decode to convert a http response that contains a document back to R variable. To decode a parsed http response, use option **parse = FALSE**. A specific example is shown below:
+
+batch getting two documents
 ```R
-# batch getting two documents
-response <- batchGetDocuments(projectID, c("projects/gsoc2018-d05d8/databases/(default)/documents/mydata/mydocument1", "projects/gsoc2018-d05d8/databases/(default)/documents/mydata/mydocument2"))
+createDocument(projectID, "mydata", df, documentName = "anotherdocument")
+
+response <- batchGetDocuments(projectID, c("projects/gsoc2018-d05d8/databases/(default)/documents/mydata/mydocument", "projects/gsoc2018-d05d8/databases/(default)/documents/mydata/anotherdocument"))
 
 parsed_response <- httr::content(response, "parsed")
-
-# get the varible contained in mydocument1
+```
+get the varible contained in mydocument
+```R
 decode(parsed_response[[1]]$found, FALSE)
-
-# get the varible contained in mydocument2
+```
+get the varible contained in anotherdocument
+```R
 decode(parsed_response[[2]]$found, FALSE)
+```
+
+* To delete a document, simply:
+```R
+deleteDocument(projectID, "mydata/anotherdocument")
+```
+
+* To list all documents under a collectionID,
+```R
+listDocuments(projectID, "mydata", 10)
 ```
