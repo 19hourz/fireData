@@ -11,25 +11,25 @@
 #' \dontrun{
 #' upload(x = mtcars, projectURL = "https://firedata-b0e54.firebaseio.com/", directory = "main")
 #' }
-upload <- function(x, projectURL, directory = "main", token = "none"){
-  output = fileConversion(x)
+upload <- function(x, projectURL, directory = "main", token = "none") {
+  output <- fileConversion(x)
   if (token == "none") {
-    Response = httr::POST(paste0(projectURL,"/",directory,".json"), body = jsonlite::toJSON(output, auto_unbox = TRUE))
+    Response <- httr::POST(paste0(projectURL, "/", directory, ".json"), body = jsonlite::toJSON(output, auto_unbox = TRUE))
   } else {
-    Response = httr::POST(paste0(projectURL,"/",directory,".json?auth=",token), body = jsonlite::toJSON(output, auto_unbox = TRUE))
+    Response <- httr::POST(paste0(projectURL, "/", directory, ".json?auth=", token), body = jsonlite::toJSON(output, auto_unbox = TRUE))
   }
-  return(paste0(directory,"/",httr::content(Response)$name))
+  return(paste0(directory, "/", httr::content(Response)$name))
 }
 
 #' @title Data conversion function
 #' @description The internal data conversion function to bring data in the right json format. In case the uploaded file is a s4 class object, the object is converted to a binary s4 object.
 #' @param x the input file.
 #' @return returns optionally reformatted data.
-fileConversion <- function(x){
+fileConversion <- function(x) {
   if (isS4(x)) {
-    output = classConversion(x)
+    output <- classConversion(x)
   } else {
-    output = x
+    output <- x
   }
 }
 
@@ -47,25 +47,24 @@ fileConversion <- function(x){
 #' download(projectURL = "https://firedata-b0e54.firebaseio.com/", fileName = "main/-KxwWNTVdplXFRZwGMkH")
 #' }
 download <- function(projectURL, fileName, secretKey = "none", token = "none", isClass = FALSE) {
-
   if (secretKey == "none" && token == "none") {
-    urlPath = paste0(projectURL,"/",fileName,".json")
+    urlPath <- paste0(projectURL, "/", fileName, ".json")
   } else if (token != "none") {
-    urlPath = paste0(projectURL,"/",fileName,".json?auth=",token)
+    urlPath <- paste0(projectURL, "/", fileName, ".json?auth=", token)
   } else {
-    urlPath = paste0(projectURL,"/",fileName,".json?auth=",secretKey)
+    urlPath <- paste0(projectURL, "/", fileName, ".json?auth=", secretKey)
   }
 
-  data = httr::GET(urlPath)
+  data <- httr::GET(urlPath)
 
-  if (is.null(jsonlite::fromJSON(httr::content(data,"text")))) warning("No data found at database location.")
+  if (is.null(jsonlite::fromJSON(httr::content(data, "text")))) warning("No data found at database location.")
   if (isClass) {
-    retrievedData = httr::content(data,"text")
-    tempPath = tempfile()
+    retrievedData <- httr::content(data, "text")
+    tempPath <- tempfile()
     writeBin(jsonlite::base64_dec(jsonlite::fromJSON(retrievedData)), tempPath)
     return(readRDS(tempPath))
   } else {
-    return(jsonlite::fromJSON(httr::content(data,"text")))
+    return(jsonlite::fromJSON(httr::content(data, "text")))
   }
 }
 
@@ -81,16 +80,18 @@ download <- function(projectURL, fileName, secretKey = "none", token = "none", i
 #' dataBackup(projectURL = "https://firedata-efa5a.firebaseio.com", secretKey = "2bYA6k72wKna90MqPGa6yuMG7jAysoDJZwJqYXsm", "test.json")
 #' }
 
-dataBackup <- function(projectURL, secretKey="prompt", fileName){
+dataBackup <- function(projectURL, secretKey="prompt", fileName) {
   if (secretKey == "prompt") {
     secretKey <- readline(prompt = "secretKey: ")
     print("Connecting to SpatialMaps:")
   }
   print("Fetching Data")
-  urlPath = paste0(projectURL,"/.json?auth=",secretKey)
-  curl::curl_download(url = urlPath,
-                      destfile = fileName,
-                      quiet = FALSE)
+  urlPath <- paste0(projectURL, "/.json?auth=", secretKey)
+  curl::curl_download(
+    url = urlPath,
+    destfile = fileName,
+    quiet = FALSE
+  )
   print(paste0("Backup created in ", fileName))
 }
 
@@ -105,14 +106,14 @@ dataBackup <- function(projectURL, secretKey="prompt", fileName){
 #' \dontrun{
 #' auth(projectAPI = "AIzaSyAjZLO9-CRV3gObpwdFz-k8AiTOxHSBmdc", email = "robin@kohze.com", password = "12341234")
 #' }
-auth <- function(projectAPI, email="prompt", password="prompt"){
+auth <- function(projectAPI, email="prompt", password="prompt") {
   if (password == "prompt" && email == "prompt") {
     email <- readline(prompt = "Email: ")
     password <- readline(prompt = "Password: ")
     print("Connecting to SpatialMaps:")
   }
-  AuthUrl = paste0("https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=", projectAPI)
-  userData = httr::POST(url = AuthUrl, body = list("email" = email, "password" = password, "returnSecureToken" = "True"), encode = "json")
+  AuthUrl <- paste0("https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=", projectAPI)
+  userData <- httr::POST(url = AuthUrl, body = list("email" = email, "password" = password, "returnSecureToken" = "True"), encode = "json")
   return(httr::content(userData))
 }
 
@@ -127,14 +128,14 @@ auth <- function(projectAPI, email="prompt", password="prompt"){
 #' \dontrun{
 #' createUser(projectAPI = "AIzaSyAjZLO9-CRV3gObpwdFz-k8AiTOxHSBmdc", email = "your@email.com", password = "12341234" )
 #' }
-createUser <- function(projectAPI, email="prompt", password="prompt"){
+createUser <- function(projectAPI, email="prompt", password="prompt") {
   if (password == "prompt" && email == "prompt") {
     email <- readline(prompt = "Email: ")
     password <- readline(prompt = "Password: ")
     print("Connecting to SpatialMaps:")
   }
-  AuthUrl = paste0("https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=", projectAPI)
-  userData = httr::POST(url = AuthUrl, body = list("email" = email, "password" = password), encode = "json")
+  AuthUrl <- paste0("https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=", projectAPI)
+  userData <- httr::POST(url = AuthUrl, body = list("email" = email, "password" = password), encode = "json")
   return(httr::content(userData))
 }
 
@@ -148,9 +149,9 @@ createUser <- function(projectAPI, email="prompt", password="prompt"){
 #' \dontrun{
 #' resetPassword(projectAPI = "AIzaSyAjZLO9-CRV3gObpwdFz-k8AiTOxHSBmdc", email = "useYourOwn@email.com")
 #' }
-resetPassword <- function(projectAPI, email){
-  AuthUrl = paste0("https://www.googleapis.com/identitytoolkit/v3/relyingparty/getOobConfirmationCode?key=", projectAPI)
-  userData = httr::POST(url = AuthUrl, body = list("email" = email, "requestType" = "PASSWORD_RESET"), encode = "json")
+resetPassword <- function(projectAPI, email) {
+  AuthUrl <- paste0("https://www.googleapis.com/identitytoolkit/v3/relyingparty/getOobConfirmationCode?key=", projectAPI)
+  userData <- httr::POST(url = AuthUrl, body = list("email" = email, "requestType" = "PASSWORD_RESET"), encode = "json")
   if ("error" %in% names(httr::content(userData))) {
     warning(paste0("User email ", email, " was not found in the database"))
   } else {
@@ -162,14 +163,14 @@ resetPassword <- function(projectAPI, email){
 #' @param x is the S4 class object
 #' @description The internal conversion is needed to conserve all class information
 #' @return returns base64 encoded binary value of class object
-classConversion <- function(x){
-  #convert object to base64
-  tempPath = tempfile()
+classConversion <- function(x) {
+  # convert object to base64
+  tempPath <- tempfile()
   saveRDS(x, file = tempPath)
-  binarySet = readBin(tempPath, what = "raw", n = 50000000)
-  base64Set = jsonlite::base64_enc(binarySet)
-  #adding key by assigning to data.frame
-  pRolocList = list("base64Set" =  base64Set)
+  binarySet <- readBin(tempPath, what = "raw", n = 50000000)
+  base64Set <- jsonlite::base64_enc(binarySet)
+  # adding key by assigning to data.frame
+  pRolocList <- list("base64Set" = base64Set)
   return(pRolocList)
 }
 
@@ -178,32 +179,25 @@ classConversion <- function(x){
 #' @param path is the db path {string}
 #' @return the approved and cleaned path_string
 #' @export
-path_check <- function(path){
-  path_replaced = gsub("\\$","-", path)
-  path_replaced = gsub("\\#","-", path_replaced)
-  path_replaced = gsub("\\]","-", path_replaced)
-  path_replaced = gsub("\\[","-", path_replaced)
-  path_replaced = gsub("\\/","-", path_replaced)
-  path_replaced = gsub("\\.","-", path_replaced)
+path_check <- function(path) {
+  path_replaced <- gsub("\\$", "-", path)
+  path_replaced <- gsub("\\#", "-", path_replaced)
+  path_replaced <- gsub("\\]", "-", path_replaced)
+  path_replaced <- gsub("\\[", "-", path_replaced)
+  path_replaced <- gsub("\\/", "-", path_replaced)
+  path_replaced <- gsub("\\.", "-", path_replaced)
   if (path_replaced != path) warning(paste0("path changed to ", path_replaced))
   return(path)
 }
 
 ## Below are implementation for Cloud Firestore
 
-# firestore_root <- "https://firestore.googleapis.com/"
-# version_prefix <- "v1beta1/"
-# projects <- "projects/"
-# databases <- "databases/"
-# documents <- "documents/"
-# authPrefix <- "Bearer "
-
 #' @title The firestore createDocument function
 #' @author Jiasheng Zhu
 #' @description The function allows to create new document on firestore databases
 #' @param projectID The Firestore project ID {string}
 #' @param documentPath path for the new document {string}
-#' @param documentName name for the new document {string}
+#' @param name indicate if name is included in the path, if set false, will automatically generate a name
 #' @param document the document to be created
 #' @param databaseID The database under which document will be added {string}
 #' @param token The user access token that can be retrieved with the auth() function. Required when the database rules specify the need for user authentications. {string}
@@ -212,27 +206,31 @@ path_check <- function(path){
 #' @examples
 #' \dontrun{
 #' }
-createDocument <- function(projectID, documentPath, document = "none", documentName = "none", databaseID = "(default)", token = "none") {
-  if(length(document) > 1 || document != "none"){
+createDocument <- function(projectID, documentPath, document = "none", name = FALSE, databaseID = "(default)", token = "none") {
+  if (length(document) > 1 || document != "none") {
     document <- generateDocument(document)
   }
-  if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
-    documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
+  if (substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/") {
+    documentPath <- substring(documentPath, 0, nchar(documentPath) - 1)
   }
-  if (documentName == "none") {
+  if (name == FALSE) {
     URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", documentPath)
   } else {
+    patterns <- gregexpr("/", documentPath)
+    pos <- patterns[[1]][length(patterns[[1]])]
+    documentName <- substring(documentPath, pos + 1)
+    documentPath <- substring(documentPath, 0, pos - 1)
     URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", documentPath, "?documentId=", documentName)
   }
   if (token == "none") {
-    if(document != "none"){
+    if (document != "none") {
       Response <- httr::POST(url = URL, body = document)
     } else {
       Response <- httr::POST(url = URL)
     }
   } else {
     token <- paste0("Bearer ", token)
-    if(document != "none"){
+    if (document != "none") {
       Response <- httr::POST(url = URL, httr::add_headers(Authorization = token), body = document)
     } else {
       Response <- httr::POST(url = URL, httr::add_headers(Authorization = token))
@@ -279,8 +277,8 @@ deleteDocument <- function(projectID, documentPath, databaseID = "(default)", to
 #' \dontrun{
 #' }
 getDocument <- function(projectID, documentPath, databaseID = "(default)", token = "none", decode = TRUE) {
-  if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
-    documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
+  if (substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/") {
+    documentPath <- substring(documentPath, 0, nchar(documentPath) - 1)
   }
   URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", documentPath)
   if (token == "none") {
@@ -289,7 +287,7 @@ getDocument <- function(projectID, documentPath, databaseID = "(default)", token
     token <- paste0("Bearer ", token)
     Response <- httr::GET(url = URL, httr::add_headers(Authorization = token))
   }
-  if(decode){
+  if (decode) {
     return(decode(Response))
   } else {
     return(Response)
@@ -317,8 +315,8 @@ getDocument <- function(projectID, documentPath, databaseID = "(default)", token
 #' \dontrun{
 #' }
 listDocuments <- function(projectID, collectionPath, pageSize, databaseID = "(default)", pageToken = NULL, orderBy = NULL, showMissing = FALSE, token = "none") {
-  if(substring(collectionPath, nchar(collectionPath), nchar(collectionPath)) == "/"){
-    collectionPath <- substring(collectionPath, 0, nchar(collectionPath)-1)
+  if (substring(collectionPath, nchar(collectionPath), nchar(collectionPath)) == "/") {
+    collectionPath <- substring(collectionPath, 0, nchar(collectionPath) - 1)
   }
   URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", collectionPath)
   if (token == "none") {
@@ -348,8 +346,8 @@ listDocuments <- function(projectID, collectionPath, pageSize, databaseID = "(de
 #' @examples
 #' \dontrun{
 #' }
-batchGetDocuments <- function(projectID, documents, databaseID = "(default)", mask = NULL, transaction = NULL, newTransaction = NULL, readTime = NULL, token = "none"){
-  URL = paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents:batchGet")
+batchGetDocuments <- function(projectID, documents, databaseID = "(default)", mask = NULL, transaction = NULL, newTransaction = NULL, readTime = NULL, token = "none") {
+  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents:batchGet")
   request <- list()
   request$documents <- documents
 
@@ -385,8 +383,8 @@ batchGetDocuments <- function(projectID, documents, databaseID = "(default)", ma
 #' }
 patchDocument <- function(projectID, documentPath, document, databaseID = "(default)", token = "none") {
   document <- generateDocument(document, name = paste0("projects/", projectID, "/", databaseID, "/documents", documentPath))
-  if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
-    documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
+  if (substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/") {
+    documentPath <- substring(documentPath, 0, nchar(documentPath) - 1)
   }
   URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", documentPath)
   if (token == "none") {
@@ -412,7 +410,7 @@ patchDocument <- function(projectID, documentPath, document, databaseID = "(defa
 #' \dontrun{
 #' }
 beginTransaction <- function(projectID, options, databaseID = "(default)", token = "none") {
-  if(substring(databaseID, nchar(databaseID), nchar(databaseID)) != "/"){
+  if (substring(databaseID, nchar(databaseID), nchar(databaseID)) != "/") {
     databaseID <- paste0(databaseID, "/")
   }
   URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "documents:beginTransaction")
@@ -438,7 +436,7 @@ beginTransaction <- function(projectID, options, databaseID = "(default)", token
 #' \dontrun{
 #' }
 commit <- function(projectID, options, databaseID = "(default)", token = "none") {
-  if(substring(databaseID, nchar(databaseID), nchar(databaseID)) != "/"){
+  if (substring(databaseID, nchar(databaseID), nchar(databaseID)) != "/") {
     databaseID <- paste0(databaseID, "/")
   }
   URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "documents:commit")
@@ -464,7 +462,7 @@ commit <- function(projectID, options, databaseID = "(default)", token = "none")
 #' \dontrun{
 #' }
 rollback <- function(projectID, transaction, databaseID = "(default)", token = "none") {
-  if(substring(databaseID, nchar(databaseID), nchar(databaseID)) != "/"){
+  if (substring(databaseID, nchar(databaseID), nchar(databaseID)) != "/") {
     databaseID <- paste0(databaseID, "/")
   }
   URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "documents:rollback")
@@ -494,12 +492,12 @@ rollback <- function(projectID, transaction, databaseID = "(default)", token = "
 #' \dontrun{
 #' }
 listCollectionIds <- function(projectID, documentPath, pageSize, databaseID = "(default)", pageToken = "none", token = "none") {
-  if(substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/"){
-    documentPath <- substring(documentPath, 0, nchar(documentPath)-1)
+  if (substring(documentPath, nchar(documentPath), nchar(documentPath)) == "/") {
+    documentPath <- substring(documentPath, 0, nchar(documentPath) - 1)
   }
   URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents/", documentPath, ":listCollectionIds")
   request_body <- paste0('{"pageSize": ', pageSize)
-  if(pageToken == "none"){
+  if (pageToken == "none") {
     request_body <- paste0(request_body, "}")
   } else {
     request_body <- paste0(request_body, ', "pageToken": "', pageToken, '"}')
@@ -532,12 +530,12 @@ listCollectionIds <- function(projectID, documentPath, pageSize, databaseID = "(
 #' @examples
 #' \dontrun{
 #' }
-runQuery <- function(projectID, query, documentPath = "none", databaseID = "(default)", transaction = NULL, newTransaction = NULL, readTime = NULL, token = "none"){
-  URL = paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents")
-  if(documentPath == "none"){
-    URL = paste0(URL, ":runQuery")
+runQuery <- function(projectID, query, documentPath = "none", databaseID = "(default)", transaction = NULL, newTransaction = NULL, readTime = NULL, token = "none") {
+  URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/documents")
+  if (documentPath == "none") {
+    URL <- paste0(URL, ":runQuery")
   } else {
-    URL = paste0(URL, "/", documentPath, ":runQuery")
+    URL <- paste0(URL, "/", documentPath, ":runQuery")
   }
   request <- list()
 
@@ -573,8 +571,8 @@ runQuery <- function(projectID, query, documentPath = "none", databaseID = "(def
 #' @examples
 #' \dontrun{
 #' }
-indexField <- function(fieldPath, mode = "MODE_UNSPECIFIED"){
-  if(mode == "MODE_UNSPECIFIED"){
+indexField <- function(fieldPath, mode = "MODE_UNSPECIFIED") {
+  if (mode == "MODE_UNSPECIFIED") {
     stop("Please specify a mode")
   }
 
@@ -595,12 +593,12 @@ indexField <- function(fieldPath, mode = "MODE_UNSPECIFIED"){
 #' @examples
 #' \dontrun{
 #' }
-index <- function(collectionID, fields){
+index <- function(collectionID, fields) {
   index_json <- paste0('{"collectionId":"', collectionID, '","fields": [')
-  for(field in fields){
+  for (field in fields) {
     index_json <- paste0(index_json, field, ",")
   }
-  index_json <- paste0(index_json, ']}')
+  index_json <- paste0(index_json, "]}")
   return(index_json)
 }
 
@@ -617,7 +615,7 @@ index <- function(collectionID, fields){
 #' @examples
 #' \dontrun{
 #' }
-createIndex <- function(projectID, index, databaseID = "(default)", token = "none"){
+createIndex <- function(projectID, index, databaseID = "(default)", token = "none") {
   URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/indexes")
   if (token == "none") {
     Response <- httr::POST(url = URL, body = index)
@@ -640,7 +638,7 @@ createIndex <- function(projectID, index, databaseID = "(default)", token = "non
 #' @examples
 #' \dontrun{
 #' }
-deleteIndex <- function(projectID, indexID, databaseID = "(default)", token = "none"){
+deleteIndex <- function(projectID, indexID, databaseID = "(default)", token = "none") {
   URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/indexes/", indexID)
   if (token == "none") {
     Response <- httr::DELETE(url = URL)
@@ -663,7 +661,7 @@ deleteIndex <- function(projectID, indexID, databaseID = "(default)", token = "n
 #' @examples
 #' \dontrun{
 #' }
-getIndex <- function(projectID, indexID, databaseID = "(default)", token = "none"){
+getIndex <- function(projectID, indexID, databaseID = "(default)", token = "none") {
   URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/indexes/", indexID)
   if (token == "none") {
     Response <- httr::GET(url = URL)
@@ -688,7 +686,7 @@ getIndex <- function(projectID, indexID, databaseID = "(default)", token = "none
 #' @examples
 #' \dontrun{
 #' }
-listIndex <- function(projectID, filter = NULL, pageSize = NULL, pageToken = NULL, databaseID = "(default)", token = "none"){
+listIndex <- function(projectID, filter = NULL, pageSize = NULL, pageToken = NULL, databaseID = "(default)", token = "none") {
   URL <- paste0("https://firestore.googleapis.com/v1beta1/projects/", projectID, "/databases/", databaseID, "/indexes")
 
   if (token == "none") {
@@ -715,10 +713,10 @@ listIndex <- function(projectID, filter = NULL, pageSize = NULL, pageToken = NUL
 #' }
 generateDocument <- function(data, name = "none") {
   field <- encode(data)
-  if(name == "none") {
-    document = paste0('{"fields":', field, '}')
+  if (name == "none") {
+    document <- paste0('{"fields":', field, "}")
   } else {
-    document = paste0('{"name": "',name,'","fields":', field, '}')
+    document <- paste0('{"name": "', name, '","fields":', field, "}")
   }
   return(document)
 }
@@ -732,66 +730,71 @@ generateDocument <- function(data, name = "none") {
 #' @examples
 #' \dontrun{
 #' }
-encode <- function(value){
-  #vector
-  if(!is.list(value) && is.vector(value) && length(value) > 1){
-    str <- ''
-    for(element in value){
+encode <- function(value) {
+  # vector
+  if (!is.list(value) && is.vector(value) && length(value) > 1) {
+    str <- ""
+    for (element in value) {
       str <- paste0(str, recursive_encode(element), ",")
     }
-    return(paste0('{"fireData" : { "arrayValue": { "values" : [', str, ']}}}'))
+    return(paste0('{"fireData" : { "arrayValue": { "values" : [', str, "]}}}"))
   }
 
-  #array and matrix
-  if(is.array(value)){
+  # array and matrix
+  if (is.array(value)) {
     data_str <- recursive_encode(as.vector(value))
     dim_str <- recursive_encode(dim(value))
     return(paste0('{"array" : { "mapValue": { "fields" : { "data" : ', data_str, ',
-                  "dim"  : ', dim_str, '}}}}'))
-    }
-
-  #data.frame
-  if(is.data.frame(value)){
-    str <- ''
-    for(name in names(value)){
-      str <- paste0(str,'"', name, '" : ', recursive_encode(value[[name]]), ', ')
-    }
-    return(paste0('{"data.frame":{"mapValue":{"fields" : {', str, '}}}}'))
+                  "dim"  : ', dim_str, "}}}}"))
   }
 
-  #list
-  if(is.list(value)){
-    str <- ''
-    for(name in names(value)){
-      str <- paste0(str,'"', name, '" : ', recursive_encode(value[[name]]), ', ')
+  # data.frame
+  if (is.data.frame(value)) {
+    str <- ""
+    for (name in names(value)) {
+      str <- paste0(str, '"', name, '" : ', recursive_encode(value[[name]]), ", ")
     }
-    return(paste0('{"list":{"mapValue":{"fields" : {', str, '}}}}'))
+    return(paste0('{"data.frame":{"mapValue":{"fields" : {', str, "}}}}"))
   }
 
-  if(is.null(value))
+  # list
+  if (is.list(value)) {
+    str <- ""
+    for (name in names(value)) {
+      str <- paste0(str, '"', name, '" : ', recursive_encode(value[[name]]), ", ")
+    }
+    return(paste0('{"list":{"mapValue":{"fields" : {', str, "}}}}"))
+  }
+
+  if (is.null(value)) {
     return(paste0('{"fireData" : { "nullValue": "', value, '" }}'))
+  }
 
-  if(is.logical(value))
+  if (is.logical(value)) {
     return(paste0('{"fireData" : { "booleanValue": "', value, '" }}'))
+  }
 
-  if(is.numeric(value) && round(value) - value == 0)
+  if (is.numeric(value) && round(value) - value == 0) {
     return(paste0('{"fireData" : { "integerValue": "', value, '" }}'))
+  }
 
-  if(is.double(value))
+  if (is.double(value)) {
     return(paste0('{"fireData" : { "doubleValue": "', value, '" }}'))
+  }
 
-  if(is.character(value))
+  if (is.character(value)) {
     return(paste0('{"fireData" : { "stringValue": "', value, '" }}'))
+  }
 
-  #TODO Binary (byte) type is not included
+  # TODO Binary (byte) type is not included
 
   # NOTE: We avoid doing an isinstance() check for a Document
   #       here to avoid import cycles.
-  #TODO reference type
-  #TODO geo point type
+  # TODO reference type
+  # TODO geo point type
 
-  stop('Cannot convert to a Firestore Value', value, 'Invalid type', typeof(value))
-  }
+  stop("Cannot convert to a Firestore Value", value, "Invalid type", typeof(value))
+}
 
 #' @title Encode a R variable to Firestore document recursively
 #' @author Jiasheng Zhu
@@ -802,46 +805,51 @@ encode <- function(value){
 #' @examples
 #' \dontrun{
 #' }
-recursive_encode <- function(value){
-  if(!is.list(value) && is.vector(value) && length(value) > 1){
-    str <- ''
-    for(element in value){
+recursive_encode <- function(value) {
+  if (!is.list(value) && is.vector(value) && length(value) > 1) {
+    str <- ""
+    for (element in value) {
       str <- paste0(str, recursive_encode(element), ",")
     }
-    return(paste0('{ "arrayValue": { "values" : [', str, '] } }'))
+    return(paste0('{ "arrayValue": { "values" : [', str, "] } }"))
   }
 
-  if(is.list(value)){
-    str <- ''
-    for(name in names(value)){
-      str <- paste0(str,'"', name, '" : ', recursive_encode(value[[name]]), ', ')
+  if (is.list(value)) {
+    str <- ""
+    for (name in names(value)) {
+      str <- paste0(str, '"', name, '" : ', recursive_encode(value[[name]]), ", ")
     }
-    return(paste0('{"mapValue":{"fields" : {', str, '}}}'))
+    return(paste0('{"mapValue":{"fields" : {', str, "}}}"))
   }
 
-  if(is.null(value))
+  if (is.null(value)) {
     return(paste0('{ "nullValue": "', value, '" }'))
+  }
 
-  if(is.logical(value))
+  if (is.logical(value)) {
     return(paste0('{ "booleanValue": "', value, '" }'))
+  }
 
-  if(is.numeric(value) && round(value) - value == 0)
+  if (is.numeric(value) && round(value) - value == 0) {
     return(paste0('{ "integerValue": "', value, '" }'))
+  }
 
-  if(is.double(value))
+  if (is.double(value)) {
     return(paste0('{ "doubleValue": "', value, '" }'))
+  }
 
-  if(is.character(value))
+  if (is.character(value)) {
     return(paste0('{ "stringValue": "', value, '" }'))
+  }
 
-  #TODO Binary (byte) type is not included
+  # TODO Binary (byte) type is not included
 
   # NOTE: We avoid doing an isinstance() check for a Document
   #       here to avoid import cycles.
-  #TODO reference type
-  #TODO geo point type
+  # TODO reference type
+  # TODO geo point type
 
-  stop('Cannot convert to a Firestore Value', value, 'Invalid type', typeof(value))
+  stop("Cannot convert to a Firestore Value", value, "Invalid type", typeof(value))
 }
 
 #' @title Decode a Firestore document to R variable
@@ -854,20 +862,20 @@ recursive_encode <- function(value){
 #' @examples
 #' \dontrun{
 #' }
-decode <- function(response, parse = TRUE){
-  if(parse){
+decode <- function(response, parse = TRUE) {
+  if (parse) {
     parsed_response <- httr::content(response, "parsed")
   } else {
     parsed_response <- response
   }
-  if(is.null(parsed_response$fields)){
+  if (is.null(parsed_response$fields)) {
     stop("Invalid response: could not find fields")
   } else {
-    if(names(parsed_response$fields) == "array"){
+    if (names(parsed_response$fields) == "array") {
       data <- recursive_decode(parsed_response$fields[["array"]]$mapValue$fields$data)
       dim <- recursive_decode(parsed_response$fields[["array"]]$mapValue$fields$dim)
       result <- array(data, dim)
-    } else if(names(parsed_response$fields) != "fireData"){
+    } else if (names(parsed_response$fields) != "fireData") {
       result <- recursive_decode(parsed_response$fields[[names(parsed_response$fields)]])
       result <- do.call(names(parsed_response$fields), result)
     } else {
@@ -886,10 +894,10 @@ decode <- function(response, parse = TRUE){
 #' @examples
 #' \dontrun{
 #' }
-recursive_decode <- function(fields){
-  for(name in names(fields)){
-    if(!length(names(fields)) == 1) stop("A key is mapped to more than one value")
-    if(names(fields) == "mapValue"){
+recursive_decode <- function(fields) {
+  for (name in names(fields)) {
+    if (!length(names(fields)) == 1) stop("A key is mapped to more than one value")
+    if (names(fields) == "mapValue") {
       result <- list()
       for (col in names(fields$mapValue$fields)) {
         result[[col]] <- recursive_decode(fields$mapValue$fields[[col]])
@@ -897,8 +905,8 @@ recursive_decode <- function(fields){
       return(result)
     }
 
-    else if(names(fields) == "arrayValue"){
-      vector_length = length(fields$arrayValue$values)
+    else if (names(fields) == "arrayValue") {
+      vector_length <- length(fields$arrayValue$values)
       result <- vector(length = vector_length)
       for (i in 1:vector_length) {
         result[i] <- recursive_decode(fields$arrayValue$values[i][[1]])
@@ -906,29 +914,29 @@ recursive_decode <- function(fields){
       return(result)
     }
 
-    #TODO may need for force type conversion
-    else if(names(fields) == "doubleValue"){
+    # TODO may need for force type conversion
+    else if (names(fields) == "doubleValue") {
       return(fields$doubleValue)
     }
 
-    else if(names(fields) == "integerValue"){
+    else if (names(fields) == "integerValue") {
       return(fields$integerValue)
     }
 
-    else if(names(fields) == "nullValue"){
+    else if (names(fields) == "nullValue") {
       return(NULL)
     }
 
-    else if(names(fields) == "booleanValue"){
+    else if (names(fields) == "booleanValue") {
       return(fields$booleanValue)
     }
 
-    else if(names(fields) == "stringValue"){
+    else if (names(fields) == "stringValue") {
       return(fields$stringValue)
     }
 
     else {
-      stop('Cannot convert to a Firestore Value ', fields, 'Invalid type', names(fields))
+      stop("Cannot convert to a Firestore Value ", fields, "Invalid type", names(fields))
     }
   }
 }

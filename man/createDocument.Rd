@@ -4,8 +4,8 @@
 \alias{createDocument}
 \title{The firestore createDocument function}
 \usage{
-createDocument(projectID, documentPath, document = "none",
-  documentName = "none", databaseID = "(default)", token = "none")
+createDocument(projectID, documentPath, document = "none", name = FALSE,
+  databaseID = "(default)", token = "none")
 }
 \arguments{
 \item{projectID}{The Firestore project ID {string}}
@@ -14,7 +14,7 @@ createDocument(projectID, documentPath, document = "none",
 
 \item{document}{the document to be created}
 
-\item{documentName}{name for the new document {string}}
+\item{name}{indicate if name is included in the path, if set false, will automatically generate a name}
 
 \item{databaseID}{The database under which document will be added {string}}
 

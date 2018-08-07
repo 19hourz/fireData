@@ -5,7 +5,7 @@ projectID <- "gsoc2018-d05d8"
 
 # refresh the access token
 # token used for testing are generated from https://developers.google.com/oauthplayground/
-TOKEN <- "ya29.GlsMBj9j5u-m860IVlefGwYiyMgs2PcgvafgLi09WM8gjOcgKZsTbZ7lppdmo9N8-yey7Tn7YsnRqaj7Vm5XoBVMNDUDXqoGWUNsm3hfMilqJ_V19RkrFCo-UYfH"
+TOKEN <- "ya29.GlvyBbO8e5Z0bYnthZVGs-V1gc5UcS7TX_Na8bUGUJ60iAiBGtU3hFGtlB4Vin5OZN6-yN5z463PpaDhZ120tg1a6FNprKpqkfVNlDXQL3Kd5zZbAbR6_eJAElZt"
 
 # Test encode and decode
 
@@ -29,12 +29,12 @@ test_that("Test encode and decode", {
 
   response <- list()
   response$nullValue <- ""
-  #should be null
+  # should be null
   recursive_decode(response)
 
   response <- list()
   response$invalidValue <- "invalid"
-  #should be null
+  # should be null
   expect_error(recursive_decode(response))
 
   l <- list()
@@ -51,23 +51,22 @@ test_that("Test encode and decode", {
 
   l_encoded <- encode(ll)
   expect_error(decode(l_encoded))
-  response <- createDocument(projectID, "test",ll, documentName = "test_code")
+  response <- createDocument(projectID, "test/test_code", ll, name = TRUE)
   deleteDocument(projectID, "test/test_code")
   l_decode <- decode(response)
-  #TODO test two list disregarding order
-
+  # TODO test two list disregarding order
 })
 
 # Test create, get and delete
 
 test_that("Test Firestore creating document and get functionality with a single data frame", {
-  df <- data.frame(matrix(rnorm(20), nrow=10))
-  response <- createDocument(projectID, "test",df, documentName = "test_create")
+  df <- data.frame(matrix(rnorm(20), nrow = 10))
+  response <- createDocument(projectID, "test/test_create", df, name = TRUE)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
   response <- getDocument(projectID, "test/test_create")
-  if(is.data.frame(response)){
-    if(all(df - response <= 1e-5)){
+  if (is.data.frame(response)) {
+    if (all(df - response <= 1e-5)) {
       succeed("Create and get produce same output")
     } else {
       fail("There are discrenpancies between original data frame and the one retrived")
@@ -83,12 +82,12 @@ test_that("Test Firestore creating document and get functionality with a single 
 
 test_that("Test Firestore creating document and get functionality with vector", {
   v <- c(rnorm(20))
-  response <- createDocument(projectID, "test",v, documentName = "test_vector")
+  response <- createDocument(projectID, "test/test_vector", v, name = TRUE)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
   response <- getDocument(projectID, "test/test_vector")
-  if(is.vector(response)){
-    if(all(v - response <= 1e-5)){
+  if (is.vector(response)) {
+    if (all(v - response <= 1e-5)) {
       succeed("Create and get produce same output")
     } else {
       fail("There are discrenpancies between original data frame and the one retrived")
@@ -103,13 +102,13 @@ test_that("Test Firestore creating document and get functionality with vector", 
 })
 
 test_that("Test Firestore creating document and get functionality with matrix", {
-  m <- matrix(rnorm(20), nrow=10)
-  response <- createDocument(projectID, "test",m, documentName = "test_matrix")
+  m <- matrix(rnorm(20), nrow = 10)
+  response <- createDocument(projectID, "test/test_matrix", m, name = TRUE)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
   response <- getDocument(projectID, "test/test_matrix")
-  if(is.matrix(response)){
-    if(all(m - response <= 1e-5)){
+  if (is.matrix(response)) {
+    if (all(m - response <= 1e-5)) {
       succeed("Create and get produce same output")
     } else {
       fail("There are discrenpancies between original data frame and the one retrived")
@@ -124,14 +123,14 @@ test_that("Test Firestore creating document and get functionality with matrix", 
 })
 
 test_that("Test Firestore creating document and get functionality with array", {
-  a <- array(rnorm(20), dim=c(5,2,2))
-  response <- createDocument(projectID, "test/",a, documentName = "test_array", token = TOKEN)
+  a <- array(rnorm(20), dim = c(5, 2, 2))
+  response <- createDocument(projectID, "test/test_array/", a, name = TRUE, token = TOKEN)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
   getDocument(projectID, "test/test_array/", decode = FALSE)
   response <- getDocument(projectID, "test/test_array/", token = TOKEN)
-  if(is.array(response)){
-    if(all(a - response <= 1e-5)){
+  if (is.array(response)) {
+    if (all(a - response <= 1e-5)) {
       succeed("Create and get produce same output")
     } else {
       fail("There are discrenpancies between original data frame and the one retrived")
@@ -176,13 +175,13 @@ test_that("Test Firestore batch get documents", {
 # test patch
 
 test_that("Test Firestore patch documents", {
-  df <- data.frame(matrix(rnorm(20), nrow=10))
-  response <- createDocument(projectID, "test", document = df, documentName = "test_patch")
+  df <- data.frame(matrix(rnorm(20), nrow = 10))
+  response <- createDocument(projectID, "test/test_patch", document = df, name = TRUE)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
   response <- getDocument(projectID, "test/test_patch")
-  if(is.data.frame(response)){
-    if(all(df - response <= 1e-5)){
+  if (is.data.frame(response)) {
+    if (all(df - response <= 1e-5)) {
       succeed("Create and get produce same output")
     } else {
       fail("There are discrenpancies between original data frame and the one retrived")
@@ -192,15 +191,15 @@ test_that("Test Firestore patch documents", {
     print(response)
   }
 
-  df <- data.frame(matrix(rnorm(20), nrow=10))
+  df <- data.frame(matrix(rnorm(20), nrow = 10))
   patchDocument(projectID, "test/test_patch", df, token = TOKEN)
   response <- patchDocument(projectID, "test/test_patch/", df)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
 
   response <- getDocument(projectID, "test/test_patch")
-  if(is.data.frame(response)){
-    if(all(df - response <= 1e-5)){
+  if (is.data.frame(response)) {
+    if (all(df - response <= 1e-5)) {
       succeed("Create and get produce same output")
     } else {
       fail("There are discrenpancies between original data frame and the one retrived")
@@ -235,7 +234,7 @@ test_that("Test Firestore listCollectionIDs", {
 # test begin transactions
 
 test_that("Test Firestore begin transaction and rollback", {
-  response <- createDocument(projectID, "test", documentName = "test_tran")
+  response <- createDocument(projectID, "test/test_tran", name = TRUE)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
 
@@ -271,15 +270,15 @@ test_that("Test Firestore commit", {
 test_that("Test Firestore index methods", {
   expect_error(indexField("country"))
   # use random string to avoid the long waiting time between creating and deleting same index
-  first_index <- paste(sample(LETTERS, 5),collapse = "")
-  second_index <- paste(sample(LETTERS, 5),collapse = "")
-  i <- index("users", c(indexField(first_index,"ASCENDING"),indexField(second_index,"ASCENDING")))
+  first_index <- paste(sample(LETTERS, 5), collapse = "")
+  second_index <- paste(sample(LETTERS, 5), collapse = "")
+  i <- index("users", c(indexField(first_index, "ASCENDING"), indexField(second_index, "ASCENDING")))
   response <- createIndex(projectID, i, token = TOKEN)
   response <- httr::content(response, "parsed")
   expect_null(response$error)
 
   name <- response$metadata$index
-  patterns <- gregexpr('/', name)
+  patterns <- gregexpr("/", name)
   pos <- patterns[[1]][length(patterns[[1]])]
   indexid <- substring(name, pos + 1)
   response <- getIndex(projectID, indexid, token = TOKEN)
@@ -291,8 +290,8 @@ test_that("Test Firestore index methods", {
   expect_null(response$error)
 
   query <- list()
-  query$from$collectionId = "users"
-  query$from$allDescendants = "TRUE"
+  query$from$collectionId <- "users"
+  query$from$allDescendants <- "TRUE"
   response <- runQuery(projectID, query, token = TOKEN)
   response <- httr::content(response, "parsed")
   expect_null(response$error)

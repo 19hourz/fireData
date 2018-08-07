@@ -45,14 +45,14 @@ library(fireData)
 * Create a document using data frame with path (default)/mydata/mydocument
 ```R
 df <- data.frame(matrix(rnorm(20), nrow=10))
-response <- createDocument(projectID, "mydata", df, documentName = "mydocument")
+response <- createDocument(projectID, "mydata/mydocument", df, name = TRUE)
 ```
 
 * Get a document with path (default)/mydata/mydocument, the returned response will be the data frame created previously
 ```R
 response <- getDocument(projectID, "mydata/mydocument")
 ```
-* To returned the original response
+* To return the original response
 ```R
 response <- getDocument(projectID, "mydata/mydocument", decode = FALSE)
 ```
@@ -65,7 +65,7 @@ patchDocument(projectID, "mydata/mydocument", df)
 
 * Use encode to convert an R variable to firestore document and use decode to convert a http response that contains a document back to R variable. To decode a parsed http response, use option parse = FALSE. A specific example is shown below
 ```R
-createDocument(projectID, "mydata", df, documentName = "anotherdocument")
+createDocument(projectID, "mydata/anotherdocument", df, name = TRUE)
 response <- batchGetDocuments(projectID, c("projects/gsoc2018-d05d8/databases/(default)/documents/mydata/mydocument", "projects/gsoc2018-d05d8/databases/(default)/documents/mydata/anotherdocument"))
 parsed_response <- httr::content(response, "parsed")
 df1 <- decode(parsed_response[[1]]$found, FALSE)
@@ -89,7 +89,7 @@ listDocuments(projectID, "mydata", 10)
 listCollectionIds(projectID, "", 1, token = TOKEN)
 ```
 
-**Index related methods and queries**
+**Index related methods**
 
 * Create index
 ```R
