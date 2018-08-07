@@ -5,7 +5,7 @@ projectID <- "gsoc2018-d05d8"
 
 # refresh the access token
 # token used for testing are generated from https://developers.google.com/oauthplayground/
-TOKEN <- "ya29.GlvyBbm6VT3q9_5Tiom9jSwqHS34U21Wq-PrariGCW0l7-iIDZcx27DHAGgYaoSu7WJidQnL4GjFeZ6jKnIkfqeCgx1hUyYUYUaHAgMXpL5ySZesz0kvWIcExCfg"
+TOKEN <- "ya29.GlvyBQAFFQaDuNYyYbylI3YabhxX68rtF1BgQsZU-Qgyahn7lrw0g7-4v-SZKiJ7mjMshOrxNZtl2BuSVyautK_Cw9Wul3835ptP_Ytq9afpj5TCNRKGX9s4J6mZ"
 
 # Test encode and decode
 
