@@ -7,7 +7,7 @@
 
 This project is part of Firedata that adds support for Google Cloud Firestore. Methods are implemented through Google Firestore REST API. Before using, please set up Firebase accordingly. Certain functions requires using OAuth 2.0 access token. To gain the access token, credentials of the project will be needed and can be found from [here](https://console.developers.google.com/apis/credentials). Firestore brought additional features upon realtime database such as querying.
 
-**Check out the repo** [here](https://github.com/19hourz/fireData), commits made during the project can be found from https://github.com/19hourz/fireData/commits?author=19hourz
+**Check out the repo** [here](https://github.com/19hourz/fireData), commits made during the project can be found from [here](https://github.com/19hourz/fireData/commits?author=19hourz)
 
 ### Things covered in this project:
 
